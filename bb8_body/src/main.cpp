@@ -12,8 +12,10 @@
 
 #pragma region HW map
 
-#define PIN_LED 2
-#define PIN_INTERRUPT 3
+// #define PIN_LED 2
+// #define PIN_MPU_INTERRUPT 2
+#define PIN_I2C_SDA 14
+#define PIN_I2C_SCL 15
 
 #pragma endregion
 
@@ -82,9 +84,9 @@ uint32_t schLastBlinkExecutionUs = 0;
 
 #pragma region Task variables
 
-uint8_t blinkState = 0;
+// uint8_t blinkState = 0;
 
-#pragma endregion
+// #pragma endregion
 
 // ########### Functions ############
 
@@ -101,8 +103,8 @@ void mpuDmpDataReady() {
 void mpuHwInit() {
     // join I2C bus (I2Cdev library doesn't do this automatically)
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-  Wire.begin();
-  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  Wire.begin(PIN_I2C_SDA, PIN_I2C_SCL, 400000);
+  // Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
   Fastwire::setup(400, true);
 #endif
@@ -111,7 +113,7 @@ void mpuHwInit() {
 bool mpuInit() {
   LOG_S("MPU Init...");
   mpu.initialize();
-  pinMode(PIN_INTERRUPT, INPUT);
+  // pinMode(PIN_MPU_INTERRUPT, INPUT);
   
   LOG_S("Testing device connections...");
   if(!mpu.testConnection()) {
@@ -159,7 +161,7 @@ void mpuLoadCalibration() { // TODO: fix this
 
 void mpuStart() {
   LOG_S("Starting MPU processing...");
-  attachInterrupt(digitalPinToInterrupt(PIN_INTERRUPT), mpuDmpDataReady, RISING);
+  // attachInterrupt(digitalPinToInterrupt(PIN_MPU_INTERRUPT), mpuDmpDataReady, RISING);
   mpuReady = true;
   mpuPacketSize = mpu.dmpGetFIFOPacketSize();
 }
@@ -217,8 +219,8 @@ void taskControl() {
 }
 
 void taskBlink() {
-  digitalWrite(PIN_LED, blinkState);
-  blinkState ^= 1;
+  // digitalWrite(PIN_LED, blinkState);
+  // blinkState ^= 1;
 }
 
 #pragma endregion
@@ -245,7 +247,7 @@ void setup() {
   mpuHwInit();
 
   Serial.begin(115200);
-  pinMode(PIN_LED, OUTPUT);
+  Serial.println("Startup...");
 
   if(mpuInit())
   {
@@ -253,14 +255,15 @@ void setup() {
     mpuStart();
   }
 
-  ps3Initialize();
+  // ps3Initialize();
 }
 
+uint32_t loopCnt = 0;
 void loop() {
-  // run scheduler
+  // // run scheduler
   schRun();
-  // perform async actions
+  // // perform async actions
   if(mpuTryRead()) {
-    // new data available
+    // TODO: new data available
   }
 }
