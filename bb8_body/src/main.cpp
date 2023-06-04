@@ -2,57 +2,38 @@
 #include <log.h>
 #include <mpu6050_wrapper.h>
 #include <ps3_wrapper.h>
+#include <ota_wrapper.h>
 
 // ########### Definitions ############
 
-#pragma region HW map
-
-// #define PIN_LED 2
+// HW map
 #define PIN_I2C_SDA 14
 #define PIN_I2C_SCL 15
 #define PIN_MPU_IT -1
 
-#pragma endregion
-
-#pragma region SCH definitions
-
+// SCH definitions
 #define SCH_CONTROL_PERIOD_US (1000)
 #define SCH_BLINK_PERIOD_US (500000)
 
-#pragma endregion
+// WIFI
+#define WIFI_SSID "..."
+#define WIFI_PASS "..."
 
 // ########### Variables ############
-
-#pragma region SCH variables
 
 uint32_t schTimeUs = 0;
 uint32_t schLastControlExecutionUs = 0;
 uint32_t schLastBlinkExecutionUs = 0;
 
-#pragma endregion
-
-#pragma region Task variables
-
-// uint8_t blinkState = 0;
-
-#pragma endregion
-
 // ########### Functions ############
-
-#pragma region Tasks
 
 void taskControl() {
 
 }
 
 void taskBlink() {
-  // digitalWrite(PIN_LED, blinkState);
-  // blinkState ^= 1;
+  LOG_N(millis());
 }
-
-#pragma endregion
-
-#pragma region SCH functions
 
 void schRun() {
   schTimeUs = micros();
@@ -66,8 +47,6 @@ void schRun() {
   }
 }
 
-#pragma endregion
-
 // ########### Entry points ############
 
 void setup() {
@@ -76,20 +55,27 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Startup...");
 
+  Serial.println("OTA Start...");
+  if(otaNetworkInitSTA(WIFI_SSID, WIFI_PASS)) {
+    otaInit();
+  }
+
+  Serial.println("MPU Start...");
   if(mpuInit())
   {
     mpuLoadCalibration();
     mpuStart();
   }
 
+  Serial.println("PS3 Start...");
   // ps3Initialize("00:00:00:00:00:00");
 }
 
 uint32_t loopCnt = 0;
 void loop() {
-  // // run scheduler
+  // run scheduler
   schRun();
-  // // perform async actions
+  // perform async actions
   if(mpuTryRead()) {
     // TODO: new data available
   }
