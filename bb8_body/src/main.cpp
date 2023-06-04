@@ -3,6 +3,7 @@
 #include <mpu6050_wrapper.h>
 #include <ps3_wrapper.h>
 #include <ota_wrapper.h>
+#include <configurations.h>
 
 // ########### Definitions ############
 
@@ -32,7 +33,7 @@ void taskControl() {
 }
 
 void taskBlink() {
-  LOG_N(millis());
+  // LOG_N(millis());
 }
 
 void schRun() {
@@ -55,6 +56,8 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Startup...");
 
+  confInit();
+
   Serial.println("OTA Start...");
   if(otaNetworkInitSTA(WIFI_SSID, WIFI_PASS)) {
     otaInit();
@@ -67,7 +70,7 @@ void setup() {
     mpuStart();
   }
 
-  Serial.println("PS3 Start...");
+  // Serial.println("PS3 Start...");
   // ps3Initialize("00:00:00:00:00:00");
 }
 
