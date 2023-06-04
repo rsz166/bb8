@@ -8,4 +8,12 @@ Tutorial: https://randomnerdtutorials.com/vs-code-platformio-ide-esp32-esp8266-a
 - Install PlatformIO extension for VS Code
 
 # Guides and examples used
-PS3 controller: https://github.com/jvpernis/esp32-ps3
+PS3 controller
+- https://github.com/jvpernis/esp32-ps3
+
+WebSerial
+- https://randomnerdtutorials.com/esp32-webserial-library/
+
+OTA
+- https://github.com/ayushsharma82/AsyncElegantOTA/issues/39
+- https://randomnerdtutorials.com/esp32-ota-over-the-air-arduino/
