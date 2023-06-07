@@ -16,7 +16,6 @@ float ps3Ypr[3];
 
 
 void ps3Notify() {
-  LOG_S("PS3 notification");
   // hold R1 or L1 to enable movement
   ps3MotorEnable = (Ps3.data.button.l1 || Ps3.data.button.r1);
   if(ps3MotorEnable) {
@@ -27,6 +26,27 @@ void ps3Notify() {
   } else {
     for(int i=0; i<3; i++) ps3Ypr[i] = 0;
   }
+  LOG_F("t%u\tl %i %i\tr%i %i\tb%i %i\ta%i %i %i\tg%i\n",
+    millis(),
+    Ps3.data.analog.stick.lx,
+    Ps3.data.analog.stick.ly,
+    Ps3.data.analog.stick.rx,
+    Ps3.data.analog.stick.ry,
+    Ps3.data.analog.button.l2,
+    Ps3.data.analog.button.r2,
+    Ps3.data.sensor.accelerometer.x,
+    Ps3.data.sensor.accelerometer.y,
+    Ps3.data.sensor.accelerometer.z,
+    Ps3.data.sensor.gyroscope.z
+    );
+    if(Ps3.event.button_down.circle) {
+      Ps3.setPlayer(2);
+      Ps3.setRumble(50,500);
+    }
+    if(Ps3.event.button_down.square) {
+      Ps3.setPlayer(3);
+      Ps3.setRumble(100,200);
+    }
 }
 
 void ps3OnConnect() {
@@ -37,6 +57,6 @@ void ps3Initialize(const char* mac) {
   for(int i=0; i<3; i++) ps3Ypr[i] = 0;
   Ps3.attach(ps3Notify);
   Ps3.attachOnConnect(ps3OnConnect);
-  Ps3.begin(mac); // TODO: change
+  Ps3.begin((char*)mac);
 }
 

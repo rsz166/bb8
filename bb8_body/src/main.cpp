@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <log.h>
 #include <mpu6050_wrapper.h>
-#include <ps3_wrapper.h>
 #include <ota_wrapper.h>
 #include <configurations.h>
+#include <ps3_wrapper.h>
 
 // ########### Definitions ############
 
@@ -19,6 +19,7 @@
 // WIFI
 #define WIFI_SSID "..."
 #define WIFI_PASS "..."
+#define PS3_MAC "01:02:03:04:05:06"
 
 // ########### Variables ############
 
@@ -58,11 +59,6 @@ void setup() {
 
   confInit();
 
-  Serial.println("OTA Start...");
-  if(otaNetworkInitSTA(WIFI_SSID, WIFI_PASS)) {
-    otaInit();
-  }
-
   Serial.println("MPU Start...");
   if(mpuInit())
   {
@@ -70,11 +66,20 @@ void setup() {
     mpuStart();
   }
 
-  // Serial.println("PS3 Start...");
-  // ps3Initialize("00:00:00:00:00:00");
+  if(0) { // TODO: decide from config
+    Serial.println("OTA Start...");
+    if(otaNetworkInitSTA(WIFI_SSID, WIFI_PASS)) { // TODO: load from config
+      otaInit();
+    }
+  } else {
+    Serial.println("PS3 Start...");
+    ps3Initialize(PS3_MAC); // TODO: load from config
+  }
+  
+  Serial.println("Ready.");
 }
 
-uint32_t loopCnt = 0;
+// uint32_t loopCnt = 0;
 void loop() {
   // run scheduler
   schRun();
