@@ -16,11 +16,6 @@
 #define SCH_CONTROL_PERIOD_US (1000)
 #define SCH_BLINK_PERIOD_US (500000)
 
-// WIFI
-#define WIFI_SSID "..."
-#define WIFI_PASS "..."
-#define PS3_MAC "01:02:03:04:05:06"
-
 // ########### Variables ############
 
 uint32_t schTimeUs = 0;
@@ -66,14 +61,19 @@ void setup() {
     mpuStart();
   }
 
-  if(0) { // TODO: decide from config
+  if(confTuning.mode != CONF_MODE_BT) {
     Serial.println("OTA Start...");
-    if(otaNetworkInitSTA(WIFI_SSID, WIFI_PASS)) { // TODO: load from config
+    if(otaNetworkInitSTA(confAuth.wifiSsid.c_str(), confAuth.wifiPass.c_str())) {
       otaInit();
+    } else if(otaNetworkInitAP("ESP")) {
+      Serial.println("OTA in AP mode");
+      otaInit();
+    } else {
+      Serial.println("OTA cannot initialize network");
     }
   } else {
     Serial.println("PS3 Start...");
-    ps3Initialize(PS3_MAC); // TODO: load from config
+    ps3Initialize(confAuth.btMac.c_str());
   }
   
   Serial.println("Ready.");

@@ -1,54 +1,149 @@
-#include <EEPROM.h>
 #include <configurations.h>
+#include <SPIFFS.h>
+#include <ArduinoJson.h>
+#include <log.h>
 
-#define CONF_MAX_SIZE (512) // max 512
+#define CONF_MAX_SIZE (1024)
 
-#define CONF_MAX_WIFI_LEN (30)
-#define CONF_ADDR_WIFI_SSID (0)
-#define CONF_ADDR_WIFI_PASS (CONF_ADDR_WIFI_SSID + CONF_MAX_WIFI_LEN)
-#define CONF_ADDR_PID_START (CONF_ADDR_WIFI_PASS + CONF_MAX_WIFI_LEN)
-#define CONF_ADDR_PID_COUNT (6)
-#define CONF_ADDR_PID_END (CONF_ADDR_PID_START + CONF_ADDR_PID_COUNT * 12 - 1)
+const String confFileTuning = "/tuning.json";
+const String confFileAuth = "/auth.json";
 
-#if CONF_ADDR_PID_END >= CONF_MAX_SIZE
-#error EEPROM definitions exceeds max size
-#endif
+ConfTuning_t confTuning;
+ConfAuth_t confAuth;
+
+bool confWriteFile(String filename, JsonDocument &doc){
+  LOG_F("writeFile -> Writing file: %s\n", filename.c_str());
+
+  File file = SPIFFS.open(filename, FILE_WRITE);
+  if(!file || file.isDirectory()) {
+    LOG_S("writeFile -> failed to open file for writing");
+    return false;
+  }
+
+  serializeJson(doc, file);
+  
+  file.close();
+
+  return true;
+}
+
+bool confReadFile(String filename, JsonDocument &doc){
+  LOG_F("readFile -> Reading file: %s\n", filename.c_str());
+
+  File file = SPIFFS.open(filename);
+  if(!file || file.isDirectory()) {
+    LOG_S("readFile -> failed to open file for reading");
+    return false;
+  }
+
+  bool ret = false;
+
+  int len = file.size();
+  LOG_F("Config file size: %i\n", len);
+  if(len > CONF_MAX_SIZE) {
+    LOG_S("Config file too large");
+  } else {
+    doc.clear();
+    auto error = deserializeJson(doc, file);
+    if ( error ) { 
+      LOG_S("Error interpreting config file");
+    } else {
+      ret = true;
+    }
+  }
+
+  file.close();
+
+  return ret;
+}
+
+bool confRead() {
+  StaticJsonDocument<CONF_MAX_SIZE> doc;
+  bool ret = true;
+
+  // load tuning
+  if(confReadFile(confFileTuning, doc)) {
+    JsonArrayConst pidArray = doc["pids"].as<JsonArrayConst>();
+    int pidCount = 0;
+    for(JsonObjectConst pidObj : pidArray) {
+      if(pidCount >= CONF_PID_COUNT) break;
+      confTuning.pid.pidArray[pidCount].p = pidObj["p"];
+      confTuning.pid.pidArray[pidCount].i = pidObj["i"];
+      confTuning.pid.pidArray[pidCount].d = pidObj["d"];
+      confTuning.pid.pidArray[pidCount].sat = pidObj["sat"];
+      pidCount++;
+    }
+    confTuning.mode = doc["mode"];
+  } else {
+    ret = false;
+  }
+
+  // load auth
+  if(confReadFile(confFileAuth, doc)) {
+    confAuth.wifiSsid = doc["wifi_ssid"].as<String>();
+    confAuth.wifiPass = doc["wifi_pass"].as<String>();
+    confAuth.btMac = doc["bt_mac"].as<String>();
+  } else {
+    ret = false;
+  }
+
+  return ret;
+}
+
+bool confWrite() {
+  StaticJsonDocument<CONF_MAX_SIZE> doc;
+  bool ret = true;
+
+  for(int i=0; i<CONF_PID_COUNT; i++) {
+    doc["pids"][i]["p"] = confTuning.pid.pidArray[i].p;
+    doc["pids"][i]["i"] = confTuning.pid.pidArray[i].i;
+    doc["pids"][i]["d"] = confTuning.pid.pidArray[i].d;
+    doc["pids"][i]["sat"] = confTuning.pid.pidArray[i].sat;
+  }
+  doc["mode"] = confTuning.mode;
+  if(!confWriteFile(confFileTuning, doc)) {
+    ret = false;
+  }
+
+  doc["wifi_ssid"] = confAuth.wifiSsid;
+  doc["wifi_pass"] = confAuth.wifiPass;
+  doc["bt_mac"] = confAuth.btMac;
+  if(!confWriteFile(confFileAuth, doc)) {
+    ret = false;
+  }
+
+  return ret;
+}
+
+String confGetTuningFile(){
+  LOG_F("getFile -> Reading file: %s\n", confFileTuning.c_str());
+
+  File file = SPIFFS.open(confFileTuning);
+  if(!file || file.isDirectory()) {
+    LOG_S("readFile -> failed to open file for reading");
+    return "";
+  }
+
+  String fileText = "";
+  while(file.available()){
+    fileText = file.readString();
+  }
+  
+  file.close();
+  return fileText;
+}
 
 void confInit() {
-  EEPROM.begin(CONF_MAX_SIZE);
-}
-
-void confWrite(int address, const byte* data, int size) {
-  EEPROM.writeBytes(address, data, size);
-}
-
-void confRead(int address, byte* data, int size) {
-  EEPROM.readBytes(address, data, size);
-}
-
-void confGetWifiSsid(char* s, int len) {
-  if(len > CONF_MAX_WIFI_LEN) len = CONF_MAX_WIFI_LEN;
-  confRead(CONF_ADDR_WIFI_SSID, (byte*)s, len);
-}
-void confSetWifiSsid(const char* s) {
-  int len = strlen(s);
-  if(len > CONF_MAX_WIFI_LEN) len = CONF_MAX_WIFI_LEN;
-  confWrite(CONF_ADDR_WIFI_SSID, (byte*)s, len);
-}
-
-void confGetWifiPass(char* s, int len) {
-  if(len > CONF_MAX_WIFI_LEN) len = CONF_MAX_WIFI_LEN;
-  confRead(CONF_ADDR_WIFI_PASS, (byte*)s, len);
-}
-void confSetWifiPass(const char* s) {
-  int len = strlen(s);
-  if(len > CONF_MAX_WIFI_LEN) len = CONF_MAX_WIFI_LEN;
-  confWrite(CONF_ADDR_WIFI_PASS, (byte*)s, len);
-}
-
-void confGetPID(int idx, ConfPIDParam_t* st) {
-  confRead(CONF_ADDR_PID_START + idx * sizeof(ConfPIDParam_t), (byte*)st, sizeof(ConfPIDParam_t));
-}
-void confSetPID(int idx, ConfPIDParam_t* st) {
-  confWrite(CONF_ADDR_PID_START + idx * sizeof(ConfPIDParam_t), (byte*)st, sizeof(ConfPIDParam_t));
+  if(!SPIFFS.begin(true)){
+    LOG_S("SPIFFS mount failed");
+  }
+  else{
+    LOG_S("SPIFFS mounted successfully");
+    if(confRead() == false) {
+      LOG_S("Could not read config file, initializing new file");
+      if (confWrite()) { // TODO: default values
+        LOG_S("Config file saved");
+      }
+    }
+  }
 }
