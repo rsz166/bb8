@@ -43,13 +43,13 @@ String otaCreatePidTable() {
       response.concat("<td><input type=\"text\" name=\"d" + String(i) + "\" value=\"" + String(confTuning.pid.pidArray[i].d) + "\"></td>");
       response.concat("<td><input type=\"text\" name=\"s" + String(i) + "\" value=\"" + String(confTuning.pid.pidArray[i].sat) + "\"></td></tr>");
     }
-    response.concat("</tbody></table><input type =\"submit\" value =\"Submit\"></form>");
+    response.concat("</tbody></table><input type =\"submit\" value =\"Submit\"></form></br><a href=\"/pidraw\">Download JSON</a>");
     return response;
 }
 
 void otaRegisterPages() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/html", "<h1>BB8</h1><a href=\"/update\">Update</a><br/><a href=\"/webserial\">WebSerial</a><br/><a href=\"/pid\">PID tune</a><br/><a href=\"/auth\">Authentication</a>");
+    request->send(200, "text/html", "<h1>BB8</h1><a href=\"/update\">Update</a><br/><a href=\"/webserial\">WebSerial</a><br/><a href=\"/pid\">PID tune</a><br/><a href=\"/auth\">Authentication</a><br/><a href=\"/mode\">Switch to bluetooth</a>");
   });
   server.on("/pidraw", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/json", confGetTuningFile());
