@@ -4,6 +4,7 @@
 #include <ota_wrapper.h>
 #include <configurations.h>
 #include <ps3_wrapper.h>
+#include <registers.h>
 
 // ########### Definitions ############
 
@@ -44,10 +45,21 @@ void schRun() {
   }
 }
 
+void registerRegisters() {
+  regsAddRegister(0, &confTuning.mode);
+  for(int i=0; i<CONF_PID_COUNT; i++) {
+    regsAddRegister(1+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].p);
+    regsAddRegister(2+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].i);
+    regsAddRegister(3+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].d);
+    regsAddRegister(4+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].sat);
+  }
+}
+
 // ########### Entry points ############
 
 void setup() {
   mpuHwInit(PIN_I2C_SDA, PIN_I2C_SCL, PIN_MPU_IT);
+  regsInit();
 
   Serial.begin(115200);
   Serial.println("Startup...");
@@ -76,6 +88,9 @@ void setup() {
     ps3Initialize(confAuth.btMac.c_str());
   }
   
+  Serial.println("Regs Start...");
+  registerRegisters();
+
   Serial.println("Ready.");
 }
 
