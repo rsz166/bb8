@@ -42,6 +42,12 @@ void intcReceiveAll() {
     intcRxBuffWriteIdx += count;
 }
 
+bool intcCheckId(int idx) {
+    if(idx >= REGS_REG_CNT) return false;
+    for(int i=0; i<INTC_REGTX_COUNT; i++) if(IntcRegTxIndexes[i] == idx) return false;
+    return true;
+}
+
 bool intcCheckReceivedFrame() {
     if(intcRxBuffer[intcRxBuffStartIdx + 5] == 
         intcRxBuffer[intcRxBuffStartIdx + 0] +
@@ -49,9 +55,12 @@ bool intcCheckReceivedFrame() {
         intcRxBuffer[intcRxBuffStartIdx + 2] +
         intcRxBuffer[intcRxBuffStartIdx + 3] +
         intcRxBuffer[intcRxBuffStartIdx + 4]) {
-            uint32_t* reg = regsRegisters[intcRxBuffer[intcRxBuffStartIdx + 0]].pi;
-            if(reg != nullptr) {
-                *reg = *(uint32_t*)&intcRxBuffer[intcRxBuffStartIdx + 1];
+            uint8_t idx = intcRxBuffer[intcRxBuffStartIdx + 0];
+            if(intcCheckId(idx)) {
+                uint32_t* reg = regsRegisters[idx].pi;
+                if(reg != nullptr) {
+                    *reg = *(uint32_t*)&intcRxBuffer[intcRxBuffStartIdx + 1];
+                }
             }
             return true;
     }

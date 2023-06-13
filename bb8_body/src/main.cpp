@@ -5,6 +5,7 @@
 #include <configurations.h>
 #include <ps3_wrapper.h>
 #include <registers.h>
+#include <internal_com.h>
 
 // ########### Definitions ############
 
@@ -45,7 +46,7 @@ void schRun() {
   }
 }
 
-void registerRegisters() {
+void registerRegisters() { // TODO: make variant dependent, and add further registers
   regsAddRegister(0, &confTuning.mode);
   for(int i=0; i<CONF_PID_COUNT; i++) {
     regsAddRegister(1+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].p);
@@ -91,6 +92,9 @@ void setup() {
   Serial.println("Regs Start...");
   registerRegisters();
 
+  // Serial.println("Internal com Start...");
+  // intcInit(); // TODO: test and enable
+
   Serial.println("Ready.");
 }
 
@@ -102,4 +106,5 @@ void loop() {
   if(mpuTryRead()) {
     // TODO: new data available
   }
+  // intcHandle(); // TODO: test and enable
 }
