@@ -1,6 +1,5 @@
 #include <registers.h>
-
-#define REGS_REG_CNT    (20)
+#include <Arduino.h>
 
 RegsRegister_t regsRegisters[REGS_REG_CNT];
 
