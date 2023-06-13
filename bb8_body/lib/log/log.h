@@ -1,3 +1,6 @@
+#ifndef LOG_H_
+#define LOG_H_
+
 #include <Arduino.h>
 #include <WebSerial.h>
 
@@ -8,3 +11,5 @@
 #define LOG_S(s) Serial.println(F(s))
 #define LOG_N Serial.println
 #define LOG_F Serial.printf
+
+#endif

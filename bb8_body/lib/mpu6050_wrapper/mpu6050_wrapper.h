@@ -1,3 +1,6 @@
+#ifndef MPU6050_WRAPPER_H_
+#define MPU6050_WRAPPER_H_
+
 #include <Arduino.h>
 
 void mpuDmpDataReady();
@@ -6,3 +9,5 @@ bool mpuInit();
 void mpuLoadCalibration();
 void mpuStart();
 bool mpuTryRead();
+
+#endif
