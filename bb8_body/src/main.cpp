@@ -6,6 +6,8 @@
 #include <ps3_wrapper.h>
 #include <registers.h>
 
+#include <ESP_FlexyStepper.h>
+
 // ########### Definitions ############
 
 // HW map
