@@ -3,8 +3,6 @@
 #include <registers.h>
 
 #define INTC_SERIAL Serial2
-const uint8_t IntcRegTxIndexes[] = {1,5,9}; // TODO: set real indexes
-#define INTC_REGTX_COUNT (sizeof(IntcRegTxIndexes))
 #define INTC_RXBUFF_SIZE (256) // TODO: check
 #define INTC_FRAMESIZE  (6)
 
@@ -23,16 +21,23 @@ bool intcInit() {
 void intcSendData(uint8_t idx) { // TODO: pack multiple frames to reduce bus load
     uint8_t buffer[INTC_FRAMESIZE];
     buffer[0] = idx;
-    *(uint32_t*)(&buffer[1]) = *regsRegisters[idx].pi;
+    *(uint32_t*)(&buffer[1]) = *regsRegisters[idx].data.pi;
     buffer[5] = buffer[0] + buffer[1] + buffer[2] + buffer[3] + buffer[4];
     INTC_SERIAL.write(buffer, sizeof(buffer)); // TODO: check if really async
 }
 
 void intcSendNext() {
-    if(intcRegTxCounter >= INTC_REGTX_COUNT) {
-        intcRegTxCounter = 0;
+    uint8_t nextReg = intcRegTxCounter;
+    do {
+        nextReg++;
+        if(nextReg >= REGS_REG_CNT) {
+            nextReg = 0;
+        }
+    } while(!regsRegisters[nextReg].isRx && nextReg != intcRegTxCounter);
+    if(!regsRegisters[nextReg].isRx) {
+        intcRegTxCounter = nextReg;
+        intcSendData(nextReg);
     }
-    intcSendData(IntcRegTxIndexes[intcRegTxCounter++]);
 }
 
 void intcReceiveAll() {
@@ -42,10 +47,9 @@ void intcReceiveAll() {
     intcRxBuffWriteIdx += count;
 }
 
-bool intcCheckId(int idx) {
+bool intcCheckIdRx(int idx) {
     if(idx >= REGS_REG_CNT) return false;
-    for(int i=0; i<INTC_REGTX_COUNT; i++) if(IntcRegTxIndexes[i] == idx) return false;
-    return true;
+    return regsRegisters[idx].isRx;
 }
 
 bool intcCheckReceivedFrame() {
@@ -56,8 +60,8 @@ bool intcCheckReceivedFrame() {
         intcRxBuffer[intcRxBuffStartIdx + 3] +
         intcRxBuffer[intcRxBuffStartIdx + 4]) {
             uint8_t idx = intcRxBuffer[intcRxBuffStartIdx + 0];
-            if(intcCheckId(idx)) {
-                uint32_t* reg = regsRegisters[idx].pi;
+            if(intcCheckIdRx(idx)) {
+                uint32_t* reg = regsRegisters[idx].data.pi;
                 if(reg != nullptr) {
                     *reg = *(uint32_t*)&intcRxBuffer[intcRxBuffStartIdx + 1];
                 }

@@ -6,6 +6,7 @@
 #include <ps3_wrapper.h>
 #include <registers.h>
 #include <internal_com.h>
+#include <register_list.h>
 
 // ########### Definitions ############
 
@@ -46,14 +47,14 @@ void schRun() {
   }
 }
 
-void registerRegisters() { // TODO: make variant dependent, and add further registers
-  regsAddRegister(0, &confTuning.mode);
-  for(int i=0; i<CONF_PID_COUNT; i++) {
-    regsAddRegister(1+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].p);
-    regsAddRegister(2+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].i);
-    regsAddRegister(3+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].d);
-    regsAddRegister(4+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].sat);
-  }
+void registerRegisters() {
+  regsAddRegister(REGLIST_MY(RegList_mode), &confTuning.mode, false);
+
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_p), &confTuning.pid.pidNamed.bodyForward.p, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_i), &confTuning.pid.pidNamed.bodyForward.i, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_d), &confTuning.pid.pidNamed.bodyForward.d, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_sat), &confTuning.pid.pidNamed.bodyForward.sat, !REGLIST_HAVE_OTA);
+  // TODO: add further registers
 }
 
 // ########### Entry points ############

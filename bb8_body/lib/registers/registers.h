@@ -3,16 +3,19 @@
 
 #include <Arduino.h>
 
-#define REGS_REG_CNT    (20)
+#define REGS_REG_CNT    (60)
 
-typedef union {
-    void* pv;
-    uint32_t* pi;
+typedef struct {
+    union {
+        void* pv;
+        uint32_t* pi;
+    } data;
+    bool isRx;
 } RegsRegister_t;
 
 extern RegsRegister_t regsRegisters[REGS_REG_CNT];
 
-void regsAddRegister(int id, void* data);
+void regsAddRegister(int id, void* data, bool isRx);
 bool regsInit();
 
 #endif

@@ -1,3 +1,6 @@
+#ifndef CONFIGURATIONS_H_
+#define CONFIGURATIONS_H_
+
 #include <Arduino.h>
 
 typedef struct {
@@ -9,7 +12,12 @@ typedef struct {
 #define CONF_MODE_BT 1
 #define CONF_MODE_WIFI 2
 
+#define CONF_NODEID_INVALID 0
+#define CONF_NODEID_BODY 1
+#define CONF_NODEID_NECK 2
+
 typedef struct {
+  int nodeId;
   union {
     ConfPIDParam_t pidArray[CONF_PID_COUNT];
     struct {
@@ -36,3 +44,5 @@ extern ConfAuth_t confAuth;
 void confInit();
 bool confWrite();
 String confGetTuningFile();
+
+#endif
