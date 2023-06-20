@@ -2,19 +2,12 @@
 #include <Arduino.h>
 #include <log.h>
 #include <Ps3Controller.h>
-#include <ESP_FlexyStepper.h>
 
 #define PS3_MAX_YAW  (100) // TODO
 #define PS3_MAX_PITCH  (100) // TODO
 #define PS3_MAX_ROLL  (100) // TODO
 #define PS3_MAX_JOY  (100) // TODO
 
-// IO pin assignments for stepper
-const int MOTOR_STEP_PIN = 26;
-const int MOTOR_DIRECTION_PIN = 16;
-
-// create the stepper motor object
-ESP_FlexyStepper stepper;
 
 bool ps3MotorEnable = false;
 // Yaw: use momentum wheel to turn right - derivative of angle
@@ -56,9 +49,6 @@ void ps3Notify() {
       Ps3.setRumble(100,200);
     }
     
-    // Rotate the motor to L_JOY_Y position. This 
-    // function call will not return until the motion is complete.
-    stepper.moveToPositionInSteps((128 + Ps3.data.analog.stick.ly)/2);
 }
 
 void ps3OnConnect() {
@@ -71,10 +61,5 @@ void ps3Initialize(const char* mac) {
   Ps3.attachOnConnect(ps3OnConnect);
   Ps3.begin((char*)mac);
 
-  // connect and configure the stepper motor to its IO pins
-  stepper.connectToPins(MOTOR_STEP_PIN, MOTOR_DIRECTION_PIN);
-  // set the speed and acceleration rates for the stepper motor
-  stepper.setSpeedInStepsPerSecond(100);
-  stepper.setAccelerationInStepsPerSecondPerSecond(100);
 }
 

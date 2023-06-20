@@ -4,6 +4,7 @@
 #include <ota_wrapper.h>
 #include <configurations.h>
 #include <ps3_wrapper.h>
+#include <stepper_wrapper.h>
 #include <registers.h>
 
 #include <ESP_FlexyStepper.h>
@@ -65,6 +66,8 @@ void setup() {
 
   Serial.begin(115200);
   Serial.println("Startup...");
+
+  stepperInit();
 
   confInit();
 
