@@ -3,10 +3,6 @@
 
 #include <Arduino.h>
 
-typedef struct {
-  float p, i, d, sat;
-} ConfPIDParam_t;
-
 #define CONF_PID_COUNT 6
 #define CONF_MODE_INVALID 0
 #define CONF_MODE_BT 1
@@ -15,6 +11,10 @@ typedef struct {
 #define CONF_NODEID_INVALID 0
 #define CONF_NODEID_BODY 1
 #define CONF_NODEID_NECK 2
+
+typedef struct {
+  float p, i, d, sat;
+} ConfPIDParam_t;
 
 typedef struct {
   int nodeId;

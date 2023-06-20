@@ -24,6 +24,7 @@
 uint32_t schTimeUs = 0;
 uint32_t schLastControlExecutionUs = 0;
 uint32_t schLastBlinkExecutionUs = 0;
+uint32_t schUptimeMillisec = 0;
 
 // ########### Functions ############
 
@@ -32,7 +33,7 @@ void taskControl() {
 }
 
 void taskBlink() {
-  // LOG_N(millis());
+  schUptimeMillisec += SCH_BLINK_PERIOD_US / 1000;
 }
 
 void schRun() {
@@ -49,11 +50,33 @@ void schRun() {
 
 void registerRegisters() {
   regsAddRegister(REGLIST_MY(RegList_mode), &confTuning.mode, false);
+  regsAddRegister(REGLIST_MY(RegList_uptime), &schUptimeMillisec, false);
 
-  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_p), &confTuning.pid.pidNamed.bodyForward.p, !REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_i), &confTuning.pid.pidNamed.bodyForward.i, !REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_d), &confTuning.pid.pidNamed.bodyForward.d, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_p),   &confTuning.pid.pidNamed.bodyForward.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_i),   &confTuning.pid.pidNamed.bodyForward.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_d),   &confTuning.pid.pidNamed.bodyForward.d,   !REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_sat), &confTuning.pid.pidNamed.bodyForward.sat, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_p),   &confTuning.pid.pidNamed.bodyTilt.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_i),   &confTuning.pid.pidNamed.bodyTilt.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_d),   &confTuning.pid.pidNamed.bodyTilt.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_sat), &confTuning.pid.pidNamed.bodyTilt.sat, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_p),   &confTuning.pid.pidNamed.bodyRotate.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_i),   &confTuning.pid.pidNamed.bodyRotate.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_d),   &confTuning.pid.pidNamed.bodyRotate.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_sat), &confTuning.pid.pidNamed.bodyRotate.sat, !REGLIST_HAVE_OTA);
+
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_p),   &confTuning.pid.pidNamed.neckForward.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_i),   &confTuning.pid.pidNamed.neckForward.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_d),   &confTuning.pid.pidNamed.neckForward.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_sat), &confTuning.pid.pidNamed.neckForward.sat, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_p),   &confTuning.pid.pidNamed.neckTilt.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_i),   &confTuning.pid.pidNamed.neckTilt.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_d),   &confTuning.pid.pidNamed.neckTilt.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_sat), &confTuning.pid.pidNamed.neckTilt.sat, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_p),   &confTuning.pid.pidNamed.neckRotate.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_i),   &confTuning.pid.pidNamed.neckRotate.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_d),   &confTuning.pid.pidNamed.neckRotate.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_sat), &confTuning.pid.pidNamed.neckRotate.sat, !REGLIST_HAVE_OTA);
   // TODO: add further registers
 }
 
