@@ -7,6 +7,7 @@
 #include <registers.h>
 #include <internal_com.h>
 #include <register_list.h>
+#include <control.h>
 
 // ########### Definitions ############
 
@@ -29,7 +30,7 @@ uint32_t schUptimeMillisec = 0;
 // ########### Functions ############
 
 void taskControl() {
-
+  // conHandle(); // TODO: test and enable
 }
 
 void taskBlink() {
@@ -118,6 +119,9 @@ void setup() {
 
   // Serial.println("Internal com Start...");
   // intcInit(); // TODO: test and enable
+
+  // Serial.println("Control Start...");
+  // conInit(); // TODO: test and enable
 
   Serial.println("Ready.");
 }

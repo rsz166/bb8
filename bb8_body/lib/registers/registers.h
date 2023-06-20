@@ -9,6 +9,7 @@ typedef struct {
     union {
         void* pv;
         uint32_t* pi;
+        float* pf;
     } data;
     bool isRx;
 } RegsRegister_t;
