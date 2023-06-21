@@ -35,6 +35,18 @@ void taskControl() {
 
 void taskBlink() {
   schUptimeMillisec += SCH_BLINK_PERIOD_US / 1000;
+  // TODO: move these to separate task
+  // if(*regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi != 0) {
+  //   int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
+  //   if(mode != confTuning.mode) {
+  //     if(mode == CONF_MODE_BT || mode == CONF_MODE_WIFI) {
+  //       confTuning.mode = mode;
+  //       confWrite();
+  //     } else if(mode == 0xffffffff) {
+  //       ESP.restart();
+  //     }
+  //   }
+  // }
 }
 
 void schRun() {
@@ -120,7 +132,7 @@ void setup() {
   // Serial.println("Internal com Start...");
   // intcInit(); // TODO: test and enable
 
-  // Serial.println("Control Start...");
+  // Serial.println("Control Start..."); 
   // conInit(); // TODO: test and enable
 
   Serial.println("Ready.");

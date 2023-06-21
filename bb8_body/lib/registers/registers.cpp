@@ -12,6 +12,7 @@ void regsAddRegister(int id, void* data, bool isRx) {
 
 bool regsInit() {
     for(int i=0; i<REGS_REG_CNT; i++) {
+        regsDefaultBuffer[i] = 0;
         regsRegisters[i].data.pi = &regsDefaultBuffer[i];
         regsRegisters[i].isRx = true;
     }

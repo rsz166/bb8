@@ -24,6 +24,7 @@ typedef enum {
     RegList_status,
     RegList_errorCode,
     RegList_batteryVoltage,
+    RegList_requestedMode,
     RegList_ctrlForw_setp,
     RegList_ctrlTilt_setp,
     RegList_ctrlRota_setp,

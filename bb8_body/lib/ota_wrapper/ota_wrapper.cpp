@@ -7,6 +7,7 @@
 #include <WebSerial.h>
 #include <configurations.h>
 #include <log.h>
+#include <registers.h>
 
 AsyncWebServer server(80);
 bool apMode = false;
@@ -47,9 +48,23 @@ String otaCreatePidTable() {
     return response;
 }
 
+String otaCreateRegTable() {
+  String response = "<h1>Registers</h1><form method=\"POST\"><table><thead><tr><td>idx</td><td>int</td><td>float</td><td>rx</td><td>write int</td><td>write float</td></tr></thead><tbody>";
+    for(int i=0; i<REGS_REG_CNT; i++) {
+      response.concat("<tr><td>" + String(i) + "</td>");
+      response.concat("<td><input type=\"text\" name=\"i" + String(i) + "\" value=\"" + String(*regsRegisters[i].data.pi) + "\"></td>");
+      response.concat("<td><input type=\"text\" name=\"f" + String(i) + "\" value=\"" + String(*regsRegisters[i].data.pf) + "\"></td>");
+      response.concat("<td>" + String(regsRegisters[i].isRx ? "RX" : "TX") + "</td>");
+      response.concat("<td><input type=\"submit\" name=\"wi" + String(i) + "\" value=\"int\"></td>");
+      response.concat("<td><input type=\"submit\" name=\"wf" + String(i) + "\" value=\"float\"></td></tr>");
+    }
+    response.concat("</tbody></table></form>");
+    return response;
+}
+
 void otaRegisterPages() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/html", "<h1>BB8</h1><a href=\"/update\">Update</a><br/><a href=\"/webserial\">WebSerial</a><br/><a href=\"/pid\">PID tune</a><br/><a href=\"/auth\">Authentication</a><br/><a href=\"/mode\">Switch to bluetooth</a>");
+    request->send(200, "text/html", "<h1>BB8</h1><a href=\"/update\">Update</a><br/><a href=\"/webserial\">WebSerial</a><br/><a href=\"/pid\">PID tune</a><br/><a href=\"/reg\">Registers</a><br/><a href=\"/auth\">Authentication</a><br/><a href=\"/mode\">Switch to bluetooth</a>");
   });
   server.on("/pidraw", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/json", confGetTuningFile());
@@ -102,6 +117,9 @@ void otaRegisterPages() {
     confWrite();
     delay(500);
     ESP.restart();
+  });
+  server.on("/reg", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/html", otaCreateRegTable());
   });
 }
 
