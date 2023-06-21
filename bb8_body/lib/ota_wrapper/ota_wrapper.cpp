@@ -8,6 +8,7 @@
 #include <configurations.h>
 #include <log.h>
 #include <registers.h>
+#include <SPIFFS.h>
 
 AsyncWebServer server(80);
 bool apMode = false;
@@ -62,10 +63,36 @@ String otaCreateRegTable() {
     return response;
 }
 
+String processor(const String& var){
+  if(var == "wifiSsid") return String(confAuth.wifiSsid);
+  if(var == "btMac") return String(confAuth.btMac);
+  return String();
+}
+
+// handles uploads
+void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+  if (!index) {
+    // open the file on first call and store the file handle in the request object
+    request->_tempFile = SPIFFS.open("/" + filename, "w");
+  }
+
+  if (len) {
+    // stream the incoming chunk to the opened file
+    request->_tempFile.write(data, len);
+  }
+
+  if (final) {
+    // close the file handle as the upload is now done
+    request->_tempFile.close();
+    request->redirect("/");
+  }
+}
+
 void otaRegisterPages() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/html", "<h1>BB8</h1><a href=\"/update\">Update</a><br/><a href=\"/webserial\">WebSerial</a><br/><a href=\"/pid\">PID tune</a><br/><a href=\"/reg\">Registers</a><br/><a href=\"/auth\">Authentication</a><br/><a href=\"/mode\">Switch to bluetooth</a>");
+    request->send(SPIFFS, "/index.html", "text/html", false, processor);
   });
+  server.serveStatic("/", SPIFFS, "/");
   server.on("/pidraw", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/json", confGetTuningFile());
   });
@@ -90,10 +117,7 @@ void otaRegisterPages() {
     request->send(200, "text/html", otaCreatePidTable());
   });
   server.on("/auth", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/html", 
-      String("<h1>Authentication</h1><form method=\"POST\"><label>ssid</label><input type=\"text\" name=\"ssid\" value=\""+confAuth.wifiSsid+
-      "\"/><br/><label>pass</label><input type=\"password\" name=\"pass\" value=\"***\"/>"+
-      "<br/><label>Bluetooth MAC</label><input type=\"text\" name=\"btmac\" value=\""+confAuth.btMac+"\"/><br/><input type =\"submit\" value =\"Submit\"></form>"));
+    request->send(SPIFFS, "/auth.html", "text/html", false, processor);
   });
   server.on("/auth", HTTP_POST, [](AsyncWebServerRequest *request) {
     int params = request->params();
@@ -106,10 +130,7 @@ void otaRegisterPages() {
       }
     }
     confWrite();
-    request->send(200, "text/html", 
-      String("<h1>Authentication</h1><form method=\"POST\"><label>ssid</label><input type=\"text\" name=\"ssid\" value=\""+confAuth.wifiSsid+
-      "\"/><br/><label>pass</label><input type=\"password\" name=\"pass\" value=\"***\"/>"+
-      "<br/><label>Bluetooth MAC</label><input type=\"text\" name=\"btmac\" value=\""+confAuth.btMac+"\"/><br/><input type =\"submit\" value =\"Submit\"></form>"));
+    request->send(SPIFFS, "/auth.html", "text/html", false, processor);
   });
   server.on("/mode", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/html", String("Mode switched to bluetooth"));
@@ -121,6 +142,15 @@ void otaRegisterPages() {
   server.on("/reg", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/html", otaCreateRegTable());
   });
+  server.on("/params", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/params.html", "text/html", false, processor);
+  });
+  server.on("/upload", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/upload.html", "text/html", false, processor);
+  });
+  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
+    request->send(200);
+  }, handleUpload);
 }
 
 void otaInit() {
