@@ -19,6 +19,7 @@
 // SCH definitions
 #define SCH_CONTROL_PERIOD_US (1000)
 #define SCH_BLINK_PERIOD_US (500000)
+#define SCH_BUTTON_HOLD_MS (1500)
 
 // ########### Variables ############
 
@@ -26,6 +27,7 @@ uint32_t schTimeUs = 0;
 uint32_t schLastControlExecutionUs = 0;
 uint32_t schLastBlinkExecutionUs = 0;
 uint32_t schUptimeMillisec = 0;
+uint32_t schButtonDownTime = 0;
 
 // ########### Functions ############
 
@@ -35,6 +37,24 @@ void taskControl() {
 
 void taskBlink() {
   schUptimeMillisec += SCH_BLINK_PERIOD_US / 1000;
+  
+  // check if switch to WiFi requested
+  if(!digitalRead(0)) {
+    if(schButtonDownTime == 0) {
+      schButtonDownTime = schUptimeMillisec;
+    }
+    else if((schUptimeMillisec - schButtonDownTime) >= SCH_BUTTON_HOLD_MS) {
+      if(confTuning.mode != CONF_MODE_WIFI) {
+        confTuning.mode = CONF_MODE_WIFI;
+        confWrite();
+        delay(500);
+        ESP.restart();
+      }
+    }
+  } else {
+    schButtonDownTime = 0;
+  }
+
   // TODO: move these to separate task
   // if(*regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi != 0) {
   //   int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
@@ -101,6 +121,8 @@ void setup() {
 
   Serial.begin(115200);
   Serial.println("Startup...");
+
+  pinMode(0, INPUT);
 
   confInit();
 
