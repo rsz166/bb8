@@ -8,6 +8,7 @@
 #include <configurations.h>
 #include <log.h>
 #include <registers.h>
+#include <register_list.h>
 #include <SPIFFS.h>
 
 AsyncWebServer server(80);
@@ -63,14 +64,77 @@ String otaCreateRegTable() {
     return response;
 }
 
-String processor(const String& var){
-  if(var == "wifiSsid") return String(confAuth.wifiSsid);
-  if(var == "btMac") return String(confAuth.btMac);
+String otaArgProcessor(const String& var){
+  if(var == "conf_wifiSsid") return String(confAuth.wifiSsid);
+  if(var == "conf_btMac") return String(confAuth.btMac);
+  if(var == "conf_nodeId") return String(confTuning.nodeId);
+  if(var == "conf_mode") return String(confTuning.mode);
+
+  if(var == "reg_body_mode") return String(*regsRegisters[REGLIST_BODY(RegList_mode)].data.pi);
+  if(var == "reg_body_uptime") return String(*regsRegisters[REGLIST_BODY(RegList_uptime)].data.pi);
+  if(var == "reg_body_status") return String(*regsRegisters[REGLIST_BODY(RegList_status)].data.pi);
+  if(var == "reg_body_errorCode") return String(*regsRegisters[REGLIST_BODY(RegList_errorCode)].data.pi);
+  if(var == "reg_body_batteryVoltage") return String(*regsRegisters[REGLIST_BODY(RegList_batteryVoltage)].data.pf);
+  if(var == "reg_body_requestedMode") return String(*regsRegisters[REGLIST_BODY(RegList_requestedMode)].data.pi);
+  if(var == "reg_body_ctrlForw_setp") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_setp)].data.pf);
+  if(var == "reg_body_ctrlTilt_setp") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_setp)].data.pf);
+  if(var == "reg_body_ctrlRota_setp") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_setp)].data.pf);
+  if(var == "reg_body_ctrlForw_feedback") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_feedback)].data.pf);
+  if(var == "reg_body_ctrlTilt_feedback") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_feedback)].data.pf);
+  if(var == "reg_body_ctrlRota_feedback") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_feedback)].data.pf);
+  if(var == "reg_body_ctrlForw_actMode") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_actMode)].data.pf);
+  if(var == "reg_body_ctrlTilt_actMode") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_actMode)].data.pf);
+  if(var == "reg_body_ctrlRota_actMode") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_actMode)].data.pf);
+  if(var == "reg_body_ctrlForw_act") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_act)].data.pf);
+  if(var == "reg_body_ctrlTilt_act") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_act)].data.pf);
+  if(var == "reg_body_ctrlRota_act") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_act)].data.pf);
+  if(var == "reg_body_ctrlForw_p") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_p)].data.pf);
+  if(var == "reg_body_ctrlTilt_p") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_p)].data.pf);
+  if(var == "reg_body_ctrlRota_p") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_p)].data.pf);
+  if(var == "reg_body_ctrlForw_i") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_i)].data.pf);
+  if(var == "reg_body_ctrlTilt_i") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_i)].data.pf);
+  if(var == "reg_body_ctrlRota_i") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_i)].data.pf);
+  if(var == "reg_body_ctrlForw_d") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_d)].data.pf);
+  if(var == "reg_body_ctrlTilt_d") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_d)].data.pf);
+  if(var == "reg_body_ctrlRota_d") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_d)].data.pf);
+  if(var == "reg_body_ctrlForw_sat") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_sat)].data.pf);
+  if(var == "reg_body_ctrlTilt_sat") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_sat)].data.pf);
+  if(var == "reg_body_ctrlRota_sat") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_sat)].data.pf);
+  if(var == "reg_neck_mode") return String(*regsRegisters[REGLIST_NECK(RegList_mode)].data.pi);
+  if(var == "reg_neck_uptime") return String(*regsRegisters[REGLIST_NECK(RegList_uptime)].data.pi);
+  if(var == "reg_neck_status") return String(*regsRegisters[REGLIST_NECK(RegList_status)].data.pi);
+  if(var == "reg_neck_errorCode") return String(*regsRegisters[REGLIST_NECK(RegList_errorCode)].data.pi);
+  if(var == "reg_neck_batteryVoltage") return String(*regsRegisters[REGLIST_NECK(RegList_batteryVoltage)].data.pf);
+  if(var == "reg_neck_requestedMode") return String(*regsRegisters[REGLIST_NECK(RegList_requestedMode)].data.pi);
+  if(var == "reg_neck_ctrlForw_setp") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_setp)].data.pf);
+  if(var == "reg_neck_ctrlTilt_setp") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_setp)].data.pf);
+  if(var == "reg_neck_ctrlRota_setp") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_setp)].data.pf);
+  if(var == "reg_neck_ctrlForw_feedback") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_feedback)].data.pf);
+  if(var == "reg_neck_ctrlTilt_feedback") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_feedback)].data.pf);
+  if(var == "reg_neck_ctrlRota_feedback") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_feedback)].data.pf);
+  if(var == "reg_neck_ctrlForw_actMode") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_actMode)].data.pf);
+  if(var == "reg_neck_ctrlTilt_actMode") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_actMode)].data.pf);
+  if(var == "reg_neck_ctrlRota_actMode") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_actMode)].data.pf);
+  if(var == "reg_neck_ctrlForw_act") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_act)].data.pf);
+  if(var == "reg_neck_ctrlTilt_act") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_act)].data.pf);
+  if(var == "reg_neck_ctrlRota_act") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_act)].data.pf);
+  if(var == "reg_neck_ctrlForw_p") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_p)].data.pf);
+  if(var == "reg_neck_ctrlTilt_p") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_p)].data.pf);
+  if(var == "reg_neck_ctrlRota_p") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_p)].data.pf);
+  if(var == "reg_neck_ctrlForw_i") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_i)].data.pf);
+  if(var == "reg_neck_ctrlTilt_i") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_i)].data.pf);
+  if(var == "reg_neck_ctrlRota_i") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_i)].data.pf);
+  if(var == "reg_neck_ctrlForw_d") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_d)].data.pf);
+  if(var == "reg_neck_ctrlTilt_d") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_d)].data.pf);
+  if(var == "reg_neck_ctrlRota_d") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_d)].data.pf);
+  if(var == "reg_neck_ctrlForw_sat") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_sat)].data.pf);
+  if(var == "reg_neck_ctrlTilt_sat") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_sat)].data.pf);
+  if(var == "reg_neck_ctrlRota_sat") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_sat)].data.pf);
   return String();
 }
 
 // handles uploads
-void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+void otaHandleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   if (!index) {
     // open the file on first call and store the file handle in the request object
     request->_tempFile = SPIFFS.open("/" + filename, "w");
@@ -88,11 +152,66 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
   }
 }
 
+void otaSaveParameter(const String& name, const String& value) {
+  LOG_F("Set %s=%s\n", name.c_str(), value.c_str());
+  if(name == "body_mode") *regsRegisters[REGLIST_BODY(RegList_mode)].data.pi = value.toInt();
+  if(name == "body_requestedMode") *regsRegisters[REGLIST_BODY(RegList_requestedMode)].data.pi = value.toInt();
+  if(name == "body_ctrlForw_setp") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_setp)].data.pf = value.toFloat();
+  if(name == "body_ctrlTilt_setp") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_setp)].data.pf = value.toFloat();
+  if(name == "body_ctrlRota_setp") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_setp)].data.pf = value.toFloat();
+  if(name == "body_ctrlForw_feedback") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_feedback)].data.pf = value.toFloat();
+  if(name == "body_ctrlTilt_feedback") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_feedback)].data.pf = value.toFloat();
+  if(name == "body_ctrlRota_feedback") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_feedback)].data.pf = value.toFloat();
+  if(name == "body_ctrlForw_actMode") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_actMode)].data.pf = value.toFloat();
+  if(name == "body_ctrlTilt_actMode") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_actMode)].data.pf = value.toFloat();
+  if(name == "body_ctrlRota_actMode") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_actMode)].data.pf = value.toFloat();
+  if(name == "body_ctrlForw_act") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_act)].data.pf = value.toFloat();
+  if(name == "body_ctrlTilt_act") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_act)].data.pf = value.toFloat();
+  if(name == "body_ctrlRota_act") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_act)].data.pf = value.toFloat();
+  if(name == "body_ctrlForw_p") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_p)].data.pf = value.toFloat();
+  if(name == "body_ctrlTilt_p") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_p)].data.pf = value.toFloat();
+  if(name == "body_ctrlRota_p") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_p)].data.pf = value.toFloat();
+  if(name == "body_ctrlForw_i") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_i)].data.pf = value.toFloat();
+  if(name == "body_ctrlTilt_i") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_i)].data.pf = value.toFloat();
+  if(name == "body_ctrlRota_i") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_i)].data.pf = value.toFloat();
+  if(name == "body_ctrlForw_d") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_d)].data.pf = value.toFloat();
+  if(name == "body_ctrlTilt_d") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_d)].data.pf = value.toFloat();
+  if(name == "body_ctrlRota_d") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_d)].data.pf = value.toFloat();
+  if(name == "body_ctrlForw_sat") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_sat)].data.pf = value.toFloat();
+  if(name == "body_ctrlTilt_sat") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_sat)].data.pf = value.toFloat();
+  if(name == "body_ctrlRota_sat") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_sat)].data.pf = value.toFloat();
+  if(name == "neck_mode") *regsRegisters[REGLIST_NECK(RegList_mode)].data.pi = value.toInt();
+  if(name == "neck_requestedMode") *regsRegisters[REGLIST_NECK(RegList_requestedMode)].data.pi = value.toInt();
+  if(name == "neck_ctrlForw_setp") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_setp)].data.pf = value.toFloat();
+  if(name == "neck_ctrlTilt_setp") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_setp)].data.pf = value.toFloat();
+  if(name == "neck_ctrlRota_setp") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_setp)].data.pf = value.toFloat();
+  if(name == "neck_ctrlForw_feedback") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_feedback)].data.pf = value.toFloat();
+  if(name == "neck_ctrlTilt_feedback") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_feedback)].data.pf = value.toFloat();
+  if(name == "neck_ctrlRota_feedback") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_feedback)].data.pf = value.toFloat();
+  if(name == "neck_ctrlForw_actMode") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_actMode)].data.pf = value.toFloat();
+  if(name == "neck_ctrlTilt_actMode") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_actMode)].data.pf = value.toFloat();
+  if(name == "neck_ctrlRota_actMode") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_actMode)].data.pf = value.toFloat();
+  if(name == "neck_ctrlForw_act") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_act)].data.pf = value.toFloat();
+  if(name == "neck_ctrlTilt_act") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_act)].data.pf = value.toFloat();
+  if(name == "neck_ctrlRota_act") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_act)].data.pf = value.toFloat();
+  if(name == "neck_ctrlForw_p") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_p)].data.pf = value.toFloat();
+  if(name == "neck_ctrlTilt_p") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_p)].data.pf = value.toFloat();
+  if(name == "neck_ctrlRota_p") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_p)].data.pf = value.toFloat();
+  if(name == "neck_ctrlForw_i") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_i)].data.pf = value.toFloat();
+  if(name == "neck_ctrlTilt_i") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_i)].data.pf = value.toFloat();
+  if(name == "neck_ctrlRota_i") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_i)].data.pf = value.toFloat();
+  if(name == "neck_ctrlForw_d") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_d)].data.pf = value.toFloat();
+  if(name == "neck_ctrlTilt_d") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_d)].data.pf = value.toFloat();
+  if(name == "neck_ctrlRota_d") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_d)].data.pf = value.toFloat();
+  if(name == "neck_ctrlForw_sat") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_sat)].data.pf = value.toFloat();
+  if(name == "neck_ctrlTilt_sat") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_sat)].data.pf = value.toFloat();
+  if(name == "neck_ctrlRota_sat") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_sat)].data.pf = value.toFloat();
+}
+
 void otaRegisterPages() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/index.html", "text/html", false, processor);
+    request->send(SPIFFS, "/index.html", "text/html", false, otaArgProcessor);
   });
-  server.serveStatic("/", SPIFFS, "/");
   server.on("/pidraw", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/json", confGetTuningFile());
   });
@@ -117,7 +236,7 @@ void otaRegisterPages() {
     request->send(200, "text/html", otaCreatePidTable());
   });
   server.on("/auth", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/auth.html", "text/html", false, processor);
+    request->send(SPIFFS, "/auth.html", "text/html", false, otaArgProcessor);
   });
   server.on("/auth", HTTP_POST, [](AsyncWebServerRequest *request) {
     int params = request->params();
@@ -125,12 +244,12 @@ void otaRegisterPages() {
       AsyncWebParameter* p = request->getParam(i);
       if(p->isPost()){
         if (p->name() == "ssid" && p->value() != "") confAuth.wifiSsid = p->value();
-        if (p->name() == "pass" && p->value() != "") confAuth.wifiPass = p->value();
+        if (p->name() == "pass" && p->value() != "" && p->value() != "***") confAuth.wifiPass = p->value();
         if (p->name() == "btmac" && p->value() != "") confAuth.btMac = p->value();
       }
     }
     confWrite();
-    request->send(SPIFFS, "/auth.html", "text/html", false, processor);
+    request->send(SPIFFS, "/auth.html", "text/html", false, otaArgProcessor);
   });
   server.on("/mode", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/html", String("Mode switched to bluetooth"));
@@ -140,17 +259,39 @@ void otaRegisterPages() {
     ESP.restart();
   });
   server.on("/reg", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/html", otaCreateRegTable());
+    request->send(SPIFFS, "/reg.html", "text/html", false, otaArgProcessor);
+  });
+  server.on("/reg", HTTP_POST, [](AsyncWebServerRequest *request) {
+    AsyncWebParameter* submit = request->getParam("submit", true);
+    if(submit != nullptr) {
+      AsyncWebParameter* p = request->getParam(submit->value(), true);
+      if(p != nullptr) {
+        otaSaveParameter(p->name(), p->value());
+      }
+    }
+    request->send(SPIFFS, "/reg.html", "text/html", false, otaArgProcessor);
   });
   server.on("/params", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/params.html", "text/html", false, processor);
+    request->send(SPIFFS, "/params.html", "text/html", false, otaArgProcessor);
+  });
+  server.on("/params", HTTP_POST, [](AsyncWebServerRequest *request) {
+    int params = request->params();
+    for(int i=0;i<params;i++){
+      AsyncWebParameter* p = request->getParam(i);
+      if(p->isPost()){
+        if (p->name() == "nodeId" && p->value() != "") confTuning.nodeId = p->value().toInt();
+        if (p->name() == "mode" && p->value() != "") confTuning.mode = p->value().toInt();
+      }
+    }
+    confWrite();
+    request->send(SPIFFS, "/params.html", "text/html", false, otaArgProcessor);
   });
   server.on("/upload", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/upload.html", "text/html", false, processor);
+    request->send(SPIFFS, "/upload.html", "text/html", false, otaArgProcessor);
   });
   server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
     request->send(200);
-  }, handleUpload);
+  }, otaHandleUpload);
 }
 
 void otaInit() {
