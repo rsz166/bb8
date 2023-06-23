@@ -10,6 +10,7 @@
 #include <registers.h>
 #include <register_list.h>
 #include <SPIFFS.h>
+#include <stepper_wrapper.h>
 
 AsyncWebServer server(80);
 bool apMode = false;
@@ -47,20 +48,6 @@ String otaCreatePidTable() {
       response.concat("<td><input type=\"text\" name=\"s" + String(i) + "\" value=\"" + String(confTuning.pid.pidArray[i].sat) + "\"></td></tr>");
     }
     response.concat("</tbody></table><input type =\"submit\" value =\"Submit\"></form></br><a href=\"/pidraw\">Download JSON</a>");
-    return response;
-}
-
-String otaCreateRegTable() {
-  String response = "<h1>Registers</h1><form method=\"POST\"><table><thead><tr><td>idx</td><td>int</td><td>float</td><td>rx</td><td>write int</td><td>write float</td></tr></thead><tbody>";
-    for(int i=0; i<REGS_REG_CNT; i++) {
-      response.concat("<tr><td>" + String(i) + "</td>");
-      response.concat("<td><input type=\"text\" name=\"i" + String(i) + "\" value=\"" + String(*regsRegisters[i].data.pi) + "\"></td>");
-      response.concat("<td><input type=\"text\" name=\"f" + String(i) + "\" value=\"" + String(*regsRegisters[i].data.pf) + "\"></td>");
-      response.concat("<td>" + String(regsRegisters[i].isRx ? "RX" : "TX") + "</td>");
-      response.concat("<td><input type=\"submit\" name=\"wi" + String(i) + "\" value=\"int\"></td>");
-      response.concat("<td><input type=\"submit\" name=\"wf" + String(i) + "\" value=\"float\"></td></tr>");
-    }
-    response.concat("</tbody></table></form>");
     return response;
 }
 
@@ -130,6 +117,9 @@ String otaArgProcessor(const String& var){
   if(var == "reg_neck_ctrlForw_sat") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_sat)].data.pf);
   if(var == "reg_neck_ctrlTilt_sat") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_sat)].data.pf);
   if(var == "reg_neck_ctrlRota_sat") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_sat)].data.pf);
+
+  if(var == "motorSpeed") return String(stepperSpeed);
+
   return String();
 }
 
@@ -285,6 +275,20 @@ void otaRegisterPages() {
     }
     confWrite();
     request->send(SPIFFS, "/params.html", "text/html", false, otaArgProcessor);
+  });
+  server.on("/motor", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/motor.html", "text/html", false, otaArgProcessor);
+  });
+  server.on("/motor", HTTP_POST, [](AsyncWebServerRequest *request) {
+    int params = request->params();
+    for(int i=0;i<params;i++){
+      AsyncWebParameter* p = request->getParam(i);
+      if(p->isPost()){
+        if (p->name() == "move" && p->value() != "") stepperMove = p->value().toFloat();
+        if (p->name() == "speed" && p->value() != "") stepperSpeed = p->value().toFloat();
+      }
+    }
+    request->send(SPIFFS, "/motor.html", "text/html", false, otaArgProcessor);
   });
   server.on("/upload", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/upload.html", "text/html", false, otaArgProcessor);

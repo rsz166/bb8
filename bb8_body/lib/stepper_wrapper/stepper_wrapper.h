@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+extern float stepperMove, stepperSpeed;
+
 void stepperInit();
 void stepperDrive();
 

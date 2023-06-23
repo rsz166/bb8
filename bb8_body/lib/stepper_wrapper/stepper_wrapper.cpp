@@ -14,6 +14,7 @@ const int MOTOR1_DIRECTION_PIN = 16;
 
 // create the stepper motor objects
 ESP_FlexyStepper stepper;
+float stepperMove = 0, stepperSpeed = 10, stepperLastSpeed = stepperSpeed;
 
 // initalize stepper motors
 void stepperInit() {
@@ -36,8 +37,17 @@ void stepperInit() {
 
 void stepperDrive() {
     // set the position, speed and acceleration
-    float stepsToMove = 10, speedToReach = 100, fastToBump = 100;
-    stepper.setSpeedInStepsPerSecond(speedToReach);
-    stepper.setAccelerationInStepsPerSecondPerSecond(fastToBump);
-    stepper.moveRelativeInSteps(stepsToMove);
+    // float stepsToMove = 10, speedToReach = 100, fastToBump = 100;
+    // stepper.setSpeedInStepsPerSecond(speedToReach);
+    // stepper.setAccelerationInStepsPerSecondPerSecond(fastToBump);
+    // stepper.moveRelativeInSteps(stepsToMove);
+    if(stepperSpeed != stepperLastSpeed) {
+        stepperLastSpeed = stepperSpeed;
+        stepper.setSpeedInStepsPerSecond(stepperSpeed);
+    }
+    if(stepperMove != 0) {
+        float tmpMove = stepperMove;
+        stepperMove = 0;
+        stepper.moveRelativeInSteps(tmpMove);
+    }
 }
