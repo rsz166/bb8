@@ -1,12 +1,22 @@
 #ifndef REGISTERS_H_
 #define REGISTERS_H_
 
-typedef union {
-    void* pv;
-    int* pi;
+#include <Arduino.h>
+
+#define REGS_REG_CNT    (60)
+
+typedef struct {
+    union {
+        void* pv;
+        uint32_t* pi;
+        float* pf;
+    } data;
+    bool isRx;
 } RegsRegister_t;
 
-void regsAddRegister(int id, void* data);
+extern RegsRegister_t regsRegisters[REGS_REG_CNT];
+
+void regsAddRegister(int id, void* data, bool isRx);
 bool regsInit();
 
 #endif

@@ -6,6 +6,9 @@
 #include <ps3_wrapper.h>
 #include <stepper_wrapper.h>
 #include <registers.h>
+#include <internal_com.h>
+#include <register_list.h>
+#include <control.h>
 
 #include <ESP_FlexyStepper.h>
 
@@ -19,21 +22,54 @@
 // SCH definitions
 #define SCH_CONTROL_PERIOD_US (1000)
 #define SCH_BLINK_PERIOD_US (500000)
+#define SCH_BUTTON_HOLD_MS (1500)
 
 // ########### Variables ############
 
 uint32_t schTimeUs = 0;
 uint32_t schLastControlExecutionUs = 0;
 uint32_t schLastBlinkExecutionUs = 0;
+uint32_t schUptimeMillisec = 0;
+uint32_t schButtonDownTime = 0;
 
 // ########### Functions ############
 
 void taskControl() {
-
+  // conHandle(); // TODO: test and enable
 }
 
 void taskBlink() {
-  // LOG_N(millis());
+  schUptimeMillisec += SCH_BLINK_PERIOD_US / 1000;
+  
+  // check if switch to WiFi requested
+  if(!digitalRead(0)) {
+    if(schButtonDownTime == 0) {
+      schButtonDownTime = schUptimeMillisec;
+    }
+    else if((schUptimeMillisec - schButtonDownTime) >= SCH_BUTTON_HOLD_MS) {
+      if(confTuning.mode != CONF_MODE_WIFI) {
+        confTuning.mode = CONF_MODE_WIFI;
+        confWrite();
+        delay(500);
+        ESP.restart();
+      }
+    }
+  } else {
+    schButtonDownTime = 0;
+  }
+
+  // TODO: move these to separate task
+  // if(*regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi != 0) {
+  //   int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
+  //   if(mode != confTuning.mode) {
+  //     if(mode == CONF_MODE_BT || mode == CONF_MODE_WIFI) {
+  //       confTuning.mode = mode;
+  //       confWrite();
+  //     } else if(mode == 0xffffffff) {
+  //       ESP.restart();
+  //     }
+  //   }
+  // }
 }
 
 void schRun() {
@@ -49,13 +85,35 @@ void schRun() {
 }
 
 void registerRegisters() {
-  regsAddRegister(0, &confTuning.mode);
-  for(int i=0; i<CONF_PID_COUNT; i++) {
-    regsAddRegister(1+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].p);
-    regsAddRegister(2+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].i);
-    regsAddRegister(3+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].d);
-    regsAddRegister(4+4*CONF_PID_COUNT, &confTuning.pid.pidArray[i].sat);
-  }
+  regsAddRegister(REGLIST_MY(RegList_mode), &confTuning.mode, false);
+  regsAddRegister(REGLIST_MY(RegList_uptime), &schUptimeMillisec, false);
+
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_p),   &confTuning.pid.pidNamed.bodyForward.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_i),   &confTuning.pid.pidNamed.bodyForward.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_d),   &confTuning.pid.pidNamed.bodyForward.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_sat), &confTuning.pid.pidNamed.bodyForward.sat, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_p),   &confTuning.pid.pidNamed.bodyTilt.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_i),   &confTuning.pid.pidNamed.bodyTilt.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_d),   &confTuning.pid.pidNamed.bodyTilt.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_sat), &confTuning.pid.pidNamed.bodyTilt.sat, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_p),   &confTuning.pid.pidNamed.bodyRotate.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_i),   &confTuning.pid.pidNamed.bodyRotate.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_d),   &confTuning.pid.pidNamed.bodyRotate.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_sat), &confTuning.pid.pidNamed.bodyRotate.sat, !REGLIST_HAVE_OTA);
+
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_p),   &confTuning.pid.pidNamed.neckForward.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_i),   &confTuning.pid.pidNamed.neckForward.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_d),   &confTuning.pid.pidNamed.neckForward.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_sat), &confTuning.pid.pidNamed.neckForward.sat, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_p),   &confTuning.pid.pidNamed.neckTilt.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_i),   &confTuning.pid.pidNamed.neckTilt.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_d),   &confTuning.pid.pidNamed.neckTilt.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_sat), &confTuning.pid.pidNamed.neckTilt.sat, !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_p),   &confTuning.pid.pidNamed.neckRotate.p,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_i),   &confTuning.pid.pidNamed.neckRotate.i,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_d),   &confTuning.pid.pidNamed.neckRotate.d,   !REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_sat), &confTuning.pid.pidNamed.neckRotate.sat, !REGLIST_HAVE_OTA);
+  // TODO: add further registers
 }
 
 // ########### Entry points ############
@@ -68,6 +126,8 @@ void setup() {
   Serial.println("Startup...");
 
   stepperInit();
+
+  pinMode(0, INPUT);
 
   confInit();
 
@@ -96,6 +156,12 @@ void setup() {
   Serial.println("Regs Start...");
   registerRegisters();
 
+  // Serial.println("Internal com Start...");
+  // intcInit(); // TODO: test and enable
+
+  // Serial.println("Control Start..."); 
+  // conInit(); // TODO: test and enable
+
   Serial.println("Ready.");
 }
 
@@ -107,4 +173,5 @@ void loop() {
   if(mpuTryRead()) {
     // TODO: new data available
   }
+  // intcHandle(); // TODO: test and enable
 }

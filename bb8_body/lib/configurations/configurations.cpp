@@ -74,6 +74,7 @@ bool confRead() {
       pidCount++;
     }
     confTuning.mode = doc["mode"];
+    confTuning.nodeId = doc["nodeId"];
   } else {
     ret = false;
   }
@@ -101,6 +102,7 @@ bool confWrite() {
     doc["pids"][i]["sat"] = confTuning.pid.pidArray[i].sat;
   }
   doc["mode"] = confTuning.mode;
+  doc["nodeId"] = confTuning.nodeId;
   if(!confWriteFile(confFileTuning, doc)) {
     ret = false;
   }
