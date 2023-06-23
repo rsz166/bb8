@@ -23,6 +23,7 @@ In VS Code, go to the PlatformIO sidebar
 - Select "Erase Flash"
 - Select "Upload"
 - Select "Upload Filesystem Image"
+
 Now your device is ready for configuration
 WiFi access point should be available with SSID "ESP", connect to it
 
@@ -32,6 +33,7 @@ You can change WiFi authentication data and bluetooth MAC address in the "Authen
 Go to "Configuration parameters" subpage
 - For "body" device set NodeId to 1
 - For "neck" device set NodeId to 2
+
 When all configurations are done, in the "body" device go to "Switch to bluetooth" subpage. This will change mode to bluetooth, and restart the device.
 To change back from bluetooth to WiFi mode, hold the IO0 button for 2 seconds on the device.
 
