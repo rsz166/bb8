@@ -28,6 +28,7 @@ Now your device is ready for configuration
 WiFi access point should be available with SSID "ESP", connect to it
 
 Open a web browser and navigate to http://192.168.5.1
+
 You can change WiFi authentication data and bluetooth MAC address in the "Authentication" subpage
 
 Go to "Configuration parameters" subpage
