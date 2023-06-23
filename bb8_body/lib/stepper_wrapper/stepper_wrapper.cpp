@@ -43,6 +43,7 @@ void stepperDrive() {
     // stepper.moveRelativeInSteps(stepsToMove);
     if(stepperSpeed != stepperLastSpeed) {
         stepperLastSpeed = stepperSpeed;
+        stepper.setAccelerationInStepsPerSecondPerSecond(stepperSpeed * 2);
         stepper.setSpeedInStepsPerSecond(stepperSpeed);
     }
     if(stepperMove != 0) {

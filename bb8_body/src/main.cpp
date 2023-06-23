@@ -153,6 +153,9 @@ void setup() {
     ps3Initialize(confAuth.btMac.c_str());
   }
   
+  Serial.println("Stepper Start...");
+  stepperInit();
+
   Serial.println("Regs Start...");
   registerRegisters();
 
@@ -174,4 +177,5 @@ void loop() {
     // TODO: new data available
   }
   // intcHandle(); // TODO: test and enable
+  stepperDrive();
 }
