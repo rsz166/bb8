@@ -285,7 +285,7 @@ void otaRegisterPages() {
       AsyncWebParameter* p = request->getParam(i);
       if(p->isPost()){
         if (p->name() == "move" && p->value() != "") {
-          if(p->value() == "Stop") stepperMove = 0;
+          if(p->value() == "Stop") stepperStop = true;
           else stepperMove = p->value().toFloat();
         }
         if (p->name() == "speed" && p->value() != "") stepperSpeed = p->value().toFloat();

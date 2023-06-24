@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 extern float stepperMove, stepperSpeed;
+extern bool stepperStop;
 
 void stepperInit();
 void stepperDrive();

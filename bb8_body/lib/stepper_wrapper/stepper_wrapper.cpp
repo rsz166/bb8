@@ -1,10 +1,11 @@
 #include <stepper_wrapper.h>
 #include <Arduino.h>
 #include <ESP_FlexyStepper.h>
+#include <log.h>
 
 // IO pin assignments for steppers
-const int MOTOR1_STEP_PIN = 26;
-const int MOTOR1_DIRECTION_PIN = 16;
+const int MOTOR1_STEP_PIN = 23;
+const int MOTOR1_DIRECTION_PIN = 22;
 
 // // Speed settings
 // const int DISTANCE_TO_TRAVEL_IN_STEPS = 2000;
@@ -15,6 +16,7 @@ const int MOTOR1_DIRECTION_PIN = 16;
 // create the stepper motor objects
 ESP_FlexyStepper stepper;
 float stepperMove = 0, stepperSpeed = 10, stepperLastSpeed = stepperSpeed;
+bool stepperStop = false;
 
 // initalize stepper motors
 void stepperInit() {
@@ -46,9 +48,14 @@ void stepperDrive() {
         stepper.setAccelerationInStepsPerSecondPerSecond(stepperSpeed * 2);
         stepper.setSpeedInStepsPerSecond(stepperSpeed);
     }
-    if(stepperMove != 0) {
+    if(stepperStop) {
+        stepper.setTargetPositionToStop();
+        stepperMove = 0;
+        stepperStop = false;
+    } else if(stepperMove != 0) {
         float tmpMove = stepperMove;
         stepperMove = 0;
+        LOG_F("Moving %f", tmpMove);
         stepper.moveRelativeInSteps(tmpMove);
     }
 }
