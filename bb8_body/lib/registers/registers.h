@@ -11,12 +11,12 @@ typedef struct {
         uint32_t* pi;
         float* pf;
     } data;
-    bool isRx;
+    bool isTx;
 } RegsRegister_t;
 
 extern RegsRegister_t regsRegisters[REGS_REG_CNT];
 
-void regsAddRegister(int id, void* data, bool isRx);
+void regsAddRegister(int id, void* data, bool isTx);
 bool regsInit();
 
 #endif

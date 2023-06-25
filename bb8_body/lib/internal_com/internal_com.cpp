@@ -1,17 +1,19 @@
 #include <internal_com.h>
 #include <Arduino.h>
 #include <registers.h>
+#include <log.h>
 
 #define INTC_SERIAL Serial2
-#define INTC_RXBUFF_SIZE (256) // TODO: check
-#define INTC_FRAMESIZE  (6)
+#define INTC_FRAMESIZE      (7)
+#define INTC_FRAME_HEADER   (0x55)
 
 uint8_t intcRegTxCounter;
-uint8_t intcRxBuffer[INTC_RXBUFF_SIZE];
+uint8_t intcRxBuffer[INTC_FRAMESIZE];
 uint32_t intcRxBuffWriteIdx, intcRxBuffStartIdx;
 
 bool intcInit() {
     INTC_SERIAL.begin(115200);
+    INTC_SERIAL.setRxBufferSize(256);
     intcRegTxCounter = 0;
     intcRxBuffWriteIdx = 0;
     intcRxBuffStartIdx = 0;
@@ -20,9 +22,11 @@ bool intcInit() {
 
 void intcSendData(uint8_t idx) { // TODO: pack multiple frames to reduce bus load
     uint8_t buffer[INTC_FRAMESIZE];
-    buffer[0] = idx;
-    *(uint32_t*)(&buffer[1]) = *regsRegisters[idx].data.pi;
-    buffer[5] = buffer[0] + buffer[1] + buffer[2] + buffer[3] + buffer[4];
+    buffer[0] = INTC_FRAME_HEADER;
+    buffer[1] = idx;
+    *(uint32_t*)(&buffer[2]) = *regsRegisters[idx].data.pi;
+    buffer[INTC_FRAMESIZE-1] = buffer[1];
+    for(int i=2;i<(INTC_FRAMESIZE-1);i++) buffer[INTC_FRAMESIZE-1] += buffer[i];
     INTC_SERIAL.write(buffer, sizeof(buffer)); // TODO: check if really async
 }
 
@@ -33,64 +37,50 @@ void intcSendNext() {
         if(nextReg >= REGS_REG_CNT) {
             nextReg = 0;
         }
-    } while(!regsRegisters[nextReg].isRx && nextReg != intcRegTxCounter);
-    if(!regsRegisters[nextReg].isRx) {
+    } while(!regsRegisters[nextReg].isTx && nextReg != intcRegTxCounter);
+    if(regsRegisters[nextReg].isTx) {
         intcRegTxCounter = nextReg;
         intcSendData(nextReg);
     }
 }
 
-void intcReceiveAll() {
-    size_t count = INTC_SERIAL.available();
-    if(count > (INTC_RXBUFF_SIZE - intcRxBuffWriteIdx)) count = INTC_RXBUFF_SIZE - intcRxBuffWriteIdx;
-    count = INTC_SERIAL.readBytes(&intcRxBuffer[intcRxBuffWriteIdx], count);
-    intcRxBuffWriteIdx += count;
-}
-
-bool intcCheckIdRx(int idx) {
+bool intcCheckIdTx(int idx) {
     if(idx >= REGS_REG_CNT) return false;
-    return regsRegisters[idx].isRx;
+    return regsRegisters[idx].isTx;
 }
 
-bool intcCheckReceivedFrame() {
-    if(intcRxBuffer[intcRxBuffStartIdx + 5] == 
-        intcRxBuffer[intcRxBuffStartIdx + 0] +
-        intcRxBuffer[intcRxBuffStartIdx + 1] +
-        intcRxBuffer[intcRxBuffStartIdx + 2] +
-        intcRxBuffer[intcRxBuffStartIdx + 3] +
-        intcRxBuffer[intcRxBuffStartIdx + 4]) {
-            uint8_t idx = intcRxBuffer[intcRxBuffStartIdx + 0];
-            if(intcCheckIdRx(idx)) {
-                uint32_t* reg = regsRegisters[idx].data.pi;
-                if(reg != nullptr) {
-                    *reg = *(uint32_t*)&intcRxBuffer[intcRxBuffStartIdx + 1];
-                }
+bool intcCheckRxFrame() {
+    uint8_t checksum = intcRxBuffer[1];
+    for(int i=2;i<(INTC_FRAMESIZE-1);i++) checksum += intcRxBuffer[i];
+    if(checksum == intcRxBuffer[INTC_FRAMESIZE-1]) {
+        uint8_t idx = intcRxBuffer[1];
+        if(!intcCheckIdTx(idx)) {
+            uint32_t* reg = regsRegisters[idx].data.pi;
+            if(reg != nullptr) {
+                *reg = *(uint32_t*)&intcRxBuffer[2];
             }
-            return true;
+        }
+        return true;
     }
     return false;
 }
 
-void intcDecodeFrames() {
-    while((intcRxBuffStartIdx + 6) > intcRxBuffWriteIdx) {
-        if(intcCheckReceivedFrame()) {
-            intcRxBuffStartIdx += 6;
-        } else {
-            intcRxBuffStartIdx++;
-        }
-    }
-    // clean up processed data
-    if(intcRxBuffWriteIdx > (INTC_RXBUFF_SIZE - INTC_FRAMESIZE)) {
-        if(intcRxBuffStartIdx == intcRxBuffWriteIdx) {
-            intcRxBuffStartIdx = 0;
-            intcRxBuffWriteIdx = 0;
-        } else {
-            uint32_t tmpIdx = 0;
-            while(intcRxBuffStartIdx < intcRxBuffWriteIdx) {
-                intcRxBuffer[tmpIdx++] = intcRxBuffer[intcRxBuffStartIdx++];
+void intcReceiveAll() {
+    int data;
+    while((data = INTC_SERIAL.read()) >= 0) {
+        if(intcRxBuffWriteIdx == 0) {
+            if(data == INTC_FRAME_HEADER) {
+                intcRxBuffer[0] = INTC_FRAME_HEADER;
+                intcRxBuffWriteIdx++;
             }
-            intcRxBuffStartIdx = 0;
-            intcRxBuffWriteIdx = tmpIdx;
+        } else {
+            intcRxBuffer[intcRxBuffWriteIdx++] = data;
+            if(intcRxBuffWriteIdx == INTC_FRAMESIZE) {
+                if(!intcCheckRxFrame()) {
+                    LOG_F("INTC Invalid frame with ID: %i\n", intcRxBuffer[1]);
+                }
+                intcRxBuffWriteIdx = 0;
+            }
         }
     }
 }
@@ -98,5 +88,4 @@ void intcDecodeFrames() {
 void intcHandle() {
     intcSendNext();
     intcReceiveAll();
-    intcDecodeFrames();
 }
