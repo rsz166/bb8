@@ -11,9 +11,11 @@
 #include <register_list.h>
 #include <SPIFFS.h>
 #include <stepper_wrapper.h>
+#include <ArduinoJson.h>
 
 AsyncWebServer server(80);
 bool apMode = false;
+AsyncEventSource events("/events");
 
 bool otaNetworkInitAP(const char* ssid) {
   apMode = true;
@@ -205,6 +207,9 @@ void otaRegisterPages() {
   server.on("/pidraw", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/json", confGetTuningFile());
   });
+  server.on("/test", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/test.html", "text/html", false, otaArgProcessor);
+  });
   server.on("/pid", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/html", otaCreatePidTable());
   });
@@ -284,11 +289,11 @@ void otaRegisterPages() {
     for(int i=0;i<params;i++){
       AsyncWebParameter* p = request->getParam(i);
       if(p->isPost()){
+        if (p->name() == "speed" && p->value() != "") stepperSpeed = p->value().toFloat();
         if (p->name() == "move" && p->value() != "") {
           if(p->value() == "Stop") stepperStop = true;
           else stepperMove = p->value().toFloat();
         }
-        if (p->name() == "speed" && p->value() != "") stepperSpeed = p->value().toFloat();
       }
     }
     request->send(SPIFFS, "/motor.html", "text/html", false, otaArgProcessor);
@@ -307,6 +312,19 @@ void otaInit() {
   AsyncElegantOTA.begin(&server);
   // WebSerial is accessible at "<IP Address>/webserial" in browser
   WebSerial.begin(&server);
+
+  events.onConnect([](AsyncEventSourceClient *client){
+    if(client->lastId()){
+      Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
+    }
+    // send event with message "hello!", id current millis
+    // and set reconnect delay to 1 second
+    client->send("hello!", NULL, millis(), 10000);
+  });
+  server.addHandler(&events);
+  
+  server.serveStatic("/", SPIFFS, "/");
+
   server.begin();
 
   Serial.println("Ready");
@@ -316,4 +334,8 @@ void otaInit() {
     Serial.print("AP IP address: ");
     Serial.println(WiFi.softAPIP());
   }
+}
+
+void otaHandle() {
+    events.send(String(micros() & 0xf).c_str(),"test_data",millis());
 }

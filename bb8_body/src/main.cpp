@@ -10,8 +10,6 @@
 #include <register_list.h>
 #include <control.h>
 
-#include <ESP_FlexyStepper.h>
-
 // ########### Definitions ############
 
 // HW map
@@ -36,6 +34,7 @@ uint32_t schButtonDownTime = 0;
 
 void taskControl() {
   // conHandle(); // TODO: test and enable
+  // otaHandle();
 }
 
 void taskBlink() {
@@ -116,6 +115,8 @@ void registerRegisters() {
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_i),   &confTuning.pid.pidNamed.neckRotate.i,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_d),   &confTuning.pid.pidNamed.neckRotate.d,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_sat), &confTuning.pid.pidNamed.neckRotate.sat, REGLIST_HAVE_OTA);
+  // TODO: debug only
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_act),   &ps3Ypr[2],  REGLIST_HAVE_REMOTE);
 }
 
 // ########### Entry points ############
@@ -180,4 +181,5 @@ void loop() {
   }
   intcHandle();
   stepperDrive();
+  stepperSpeed = ps3Ypr[2]; // TODO: debug only
 }

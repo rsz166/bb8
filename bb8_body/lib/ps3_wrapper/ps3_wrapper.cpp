@@ -13,8 +13,7 @@ bool ps3MotorEnable = false;
 // Yaw: use momentum wheel to turn right - derivative of angle
 // Pitch: rotate body backwards - angle
 // Roll: tilt body right - angle
-float ps3Ypr[3];
-
+float ps3Ypr[3] = {0,0,0};
 
 void ps3Notify() {
   // hold R1 or L1 to enable movement
