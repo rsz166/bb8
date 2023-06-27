@@ -30,6 +30,7 @@ typedef enum {
 
 typedef struct {
   uint8_t pinStep,pinDir,pinEn;
+  bool negate;
 } ConfMotHw_t;
 
 typedef struct {

@@ -120,7 +120,7 @@ String otaArgProcessor(const String& var){
   if(var == "reg_neck_ctrlTilt_sat") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_sat)].data.pf);
   if(var == "reg_neck_ctrlRota_sat") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_sat)].data.pf);
 
-  if(var == "motorSpeed") return String(stepperSpeed);
+  // if(var == "motorSpeed") return String(stepperSpeed);
 
   return String();
 }
@@ -288,13 +288,13 @@ void otaRegisterPages() {
     int params = request->params();
     for(int i=0;i<params;i++){
       AsyncWebParameter* p = request->getParam(i);
-      if(p->isPost()){
-        if (p->name() == "speed" && p->value() != "") stepperSpeed = p->value().toFloat();
-        if (p->name() == "move" && p->value() != "") {
-          if(p->value() == "Stop") stepperStop = true;
-          else stepperMove = p->value().toFloat();
-        }
-      }
+      // if(p->isPost()){ // TODO
+      //   if (p->name() == "speed" && p->value() != "") stepperSpeed = p->value().toFloat();
+      //   if (p->name() == "move" && p->value() != "") {
+      //     if(p->value() == "Stop") stepperStop = true;
+      //     else stepperMove = p->value().toFloat();
+      //   }
+      // }
     }
     request->send(SPIFFS, "/motor.html", "text/html", false, otaArgProcessor);
   });

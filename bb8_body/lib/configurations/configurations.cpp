@@ -8,8 +8,8 @@
 const String confFileSysTuning = "/sysTuning.json";
 const String confFileDevConf = "/devConf.json";
 
-extern ConfSysTuning_t confSysTuning;
-extern ConfDeviceConfig_t confDevConf;
+ConfSysTuning_t confSysTuning;
+ConfDeviceConfig_t confDevConf;
 
 bool confWriteFile(String filename, JsonDocument &doc){
   LOG_F("writeFile -> Writing file: %s\n", filename.c_str());
@@ -101,6 +101,7 @@ bool confRead() {
       confDevConf.motorHws.motHwArray[count].pinStep = obj["pinStep"];
       confDevConf.motorHws.motHwArray[count].pinDir = obj["pinDir"];
       confDevConf.motorHws.motHwArray[count].pinEn = obj["pinEn"];
+      confDevConf.motorHws.motHwArray[count].negate = obj["negate"];
       count++;
     }
   } else {
@@ -140,6 +141,7 @@ bool confWrite() {
     doc["motorHws"][i]["pinStep"] = confDevConf.motorHws.motHwArray[i].pinStep;
     doc["motorHws"][i]["pinDir"] = confDevConf.motorHws.motHwArray[i].pinDir;
     doc["motorHws"][i]["pinEn"] = confDevConf.motorHws.motHwArray[i].pinEn;
+    doc["motorHws"][i]["negate"] = confDevConf.motorHws.motHwArray[i].negate;
   }
   if(!confWriteFile(confFileDevConf, doc)) {
     ret = false;

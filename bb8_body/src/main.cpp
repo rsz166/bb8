@@ -144,8 +144,6 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Startup...");
 
-  stepperInit();
-
   pinMode(0, INPUT);
 
   confInit();
@@ -173,7 +171,7 @@ void setup() {
   }
   
   Serial.println("Stepper Start...");
-  stepperInit();
+  stepInit(); // TODO: wait for sys config to be downloaded
 
   Serial.println("Regs Start...");
   registerRegisters();
@@ -196,6 +194,6 @@ void loop() {
     // TODO: new data available
   }
   intcHandle();
-  stepperDrive();
-  stepperSpeed = ps3Ypr[2]; // TODO: debug only
+  stepHandle();
+  // stepperSpeed = ps3Ypr[2]; // TODO: debug only
 }
