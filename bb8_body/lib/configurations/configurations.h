@@ -3,7 +3,9 @@
 
 #include <Arduino.h>
 
-#define CONF_PID_COUNT 6
+#define CONF_DEV_MOT_COUNT 3
+#define CONF_SYS_MOT_COUNT 6
+#define CONF_SYS_PID_COUNT 6
 #define CONF_MODE_INVALID 0
 #define CONF_MODE_BT 1
 #define CONF_MODE_WIFI 2
@@ -16,10 +18,29 @@ typedef struct {
   float p, i, d, sat;
 } ConfPIDParam_t;
 
+typedef enum {
+  ConfMotMode_disabled = 0,
+  ConfMotMode_controlPosition,
+  ConfMotMode_manualPosition,
+  ConfMotMode_controlSpeed,
+  ConfMotMode_manualSpeed,
+  ConfMotMode_controlAcceleration,
+  ConfMotMode_manualAcceleration,
+} ConfMotMode_t;
+
 typedef struct {
-  int nodeId;
+  uint8_t pinStep,pinDir,pinEn;
+} ConfMotHw_t;
+
+typedef struct {
+  ConfMotMode_t mode;
+  float speed, accel; // default speed if in position mode, max speed if in speed mode
+} ConfMotTuning_t;
+
+// system level parameters, shared
+typedef struct {
   union {
-    ConfPIDParam_t pidArray[CONF_PID_COUNT];
+    ConfPIDParam_t pidArray[CONF_SYS_PID_COUNT];
     struct {
     ConfPIDParam_t bodyForward;
     ConfPIDParam_t bodyTilt;
@@ -28,21 +49,41 @@ typedef struct {
     ConfPIDParam_t neckTilt;
     ConfPIDParam_t neckRotate;
     } pidNamed;
-  } pid;
-  int mode;
-} ConfTuning_t;
+  } pids;
+  union {
+    ConfMotTuning_t motArray[CONF_SYS_MOT_COUNT];
+    struct {
+      ConfMotTuning_t bodyForward;
+      ConfMotTuning_t bodyTilt;
+      ConfMotTuning_t bodyRotate;
+      ConfMotTuning_t neckForward;
+      ConfMotTuning_t neckTilt;
+      ConfMotTuning_t neckRotate;
+    } motNamed;
+  } motors;
+} ConfSysTuning_t;
 
+// device level parameters, unique per device
 typedef struct {
   String wifiSsid;
   String wifiPass;
   String btMac;
-} ConfAuth_t;
+  int nodeId;
+  int mode;
+  union {
+    ConfMotHw_t motHwArray[CONF_DEV_MOT_COUNT];
+    struct {
+      ConfMotHw_t forward;
+      ConfMotHw_t tilt;
+      ConfMotHw_t rotate;
+    } motHwNamed;
+  } motorHws;
+} ConfDeviceConfig_t;
 
-extern ConfTuning_t confTuning;
-extern ConfAuth_t confAuth;
+extern ConfSysTuning_t confSysTuning;
+extern ConfDeviceConfig_t confDevConf;
 
 void confInit();
 bool confWrite();
-String confGetTuningFile();
 
 #endif

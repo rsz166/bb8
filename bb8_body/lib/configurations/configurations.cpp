@@ -5,11 +5,11 @@
 
 #define CONF_MAX_SIZE (1024)
 
-const String confFileTuning = "/tuning.json";
-const String confFileAuth = "/auth.json";
+const String confFileSysTuning = "/sysTuning.json";
+const String confFileDevConf = "/devConf.json";
 
-ConfTuning_t confTuning;
-ConfAuth_t confAuth;
+extern ConfSysTuning_t confSysTuning;
+extern ConfDeviceConfig_t confDevConf;
 
 bool confWriteFile(String filename, JsonDocument &doc){
   LOG_F("writeFile -> Writing file: %s\n", filename.c_str());
@@ -61,29 +61,48 @@ bool confRead() {
   StaticJsonDocument<CONF_MAX_SIZE> doc;
   bool ret = true;
 
-  // load tuning
-  if(confReadFile(confFileTuning, doc)) {
-    JsonArrayConst pidArray = doc["pids"].as<JsonArrayConst>();
-    int pidCount = 0;
-    for(JsonObjectConst pidObj : pidArray) {
-      if(pidCount >= CONF_PID_COUNT) break;
-      confTuning.pid.pidArray[pidCount].p = pidObj["p"];
-      confTuning.pid.pidArray[pidCount].i = pidObj["i"];
-      confTuning.pid.pidArray[pidCount].d = pidObj["d"];
-      confTuning.pid.pidArray[pidCount].sat = pidObj["sat"];
-      pidCount++;
+  // load sys tuning
+  if(confReadFile(confFileSysTuning, doc)) {
+    JsonArrayConst objArray = doc["pids"].as<JsonArrayConst>();
+    int count = 0;
+    for(JsonObjectConst obj : objArray) {
+      if(count >= CONF_SYS_PID_COUNT) break;
+      confSysTuning.pids.pidArray[count].p = obj["p"];
+      confSysTuning.pids.pidArray[count].i = obj["i"];
+      confSysTuning.pids.pidArray[count].d = obj["d"];
+      confSysTuning.pids.pidArray[count].sat = obj["sat"];
+      count++;
     }
-    confTuning.mode = doc["mode"];
-    confTuning.nodeId = doc["nodeId"];
+    objArray = doc["motors"].as<JsonArrayConst>();
+    count = 0;
+    for(JsonObjectConst obj : objArray) {
+      if(count >= CONF_SYS_MOT_COUNT) break;
+      confSysTuning.motors.motArray[count].mode = obj["mode"];
+      confSysTuning.motors.motArray[count].speed = obj["speed"];
+      confSysTuning.motors.motArray[count].accel = obj["accel"];
+      count++;
+    }
   } else {
     ret = false;
   }
 
-  // load auth
-  if(confReadFile(confFileAuth, doc)) {
-    confAuth.wifiSsid = doc["wifi_ssid"].as<String>();
-    confAuth.wifiPass = doc["wifi_pass"].as<String>();
-    confAuth.btMac = doc["bt_mac"].as<String>();
+  // load dev config
+  if(confReadFile(confFileDevConf, doc)) {
+    confDevConf.mode = doc["mode"];
+    confDevConf.nodeId = doc["nodeId"];
+    confDevConf.wifiSsid = doc["wifi_ssid"].as<String>();
+    confDevConf.wifiPass = doc["wifi_pass"].as<String>();
+    confDevConf.btMac = doc["bt_mac"].as<String>();
+
+    JsonArrayConst objArray = doc["motorHws"].as<JsonArrayConst>();
+    int count = 0;
+    for(JsonObjectConst obj : objArray) {
+      if(count >= CONF_DEV_MOT_COUNT) break;
+      confDevConf.motorHws.motHwArray[count].pinStep = obj["pinStep"];
+      confDevConf.motorHws.motHwArray[count].pinDir = obj["pinDir"];
+      confDevConf.motorHws.motHwArray[count].pinEn = obj["pinEn"];
+      count++;
+    }
   } else {
     ret = false;
   }
@@ -95,22 +114,34 @@ bool confWrite() {
   StaticJsonDocument<CONF_MAX_SIZE> doc;
   bool ret = true;
 
-  for(int i=0; i<CONF_PID_COUNT; i++) {
-    doc["pids"][i]["p"] = confTuning.pid.pidArray[i].p;
-    doc["pids"][i]["i"] = confTuning.pid.pidArray[i].i;
-    doc["pids"][i]["d"] = confTuning.pid.pidArray[i].d;
-    doc["pids"][i]["sat"] = confTuning.pid.pidArray[i].sat;
+  for(int i=0; i<CONF_SYS_PID_COUNT; i++) {
+    doc["pids"][i]["p"] = confSysTuning.pids.pidArray[i].p;
+    doc["pids"][i]["i"] = confSysTuning.pids.pidArray[i].i;
+    doc["pids"][i]["d"] = confSysTuning.pids.pidArray[i].d;
+    doc["pids"][i]["sat"] = confSysTuning.pids.pidArray[i].sat;
   }
-  doc["mode"] = confTuning.mode;
-  doc["nodeId"] = confTuning.nodeId;
-  if(!confWriteFile(confFileTuning, doc)) {
+  for(int i=0; i<CONF_SYS_MOT_COUNT; i++) {
+    doc["motors"][i]["mode"] = confSysTuning.motors.motArray[i].mode;
+    doc["motors"][i]["speed"] = confSysTuning.motors.motArray[i].speed;
+    doc["motors"][i]["accel"] = confSysTuning.motors.motArray[i].accel;
+  }
+  if(!confWriteFile(confFileSysTuning, doc)) {
     ret = false;
   }
 
-  doc["wifi_ssid"] = confAuth.wifiSsid;
-  doc["wifi_pass"] = confAuth.wifiPass;
-  doc["bt_mac"] = confAuth.btMac;
-  if(!confWriteFile(confFileAuth, doc)) {
+  doc.clear();
+
+  doc["mode"] = confDevConf.mode;
+  doc["nodeId"] = confDevConf.nodeId;
+  doc["wifi_ssid"] = confDevConf.wifiSsid;
+  doc["wifi_pass"] = confDevConf.wifiPass;
+  doc["bt_mac"] = confDevConf.btMac;
+  for(int i=0; i<CONF_SYS_PID_COUNT; i++) {
+    doc["motorHws"][i]["pinStep"] = confDevConf.motorHws.motHwArray[i].pinStep;
+    doc["motorHws"][i]["pinDir"] = confDevConf.motorHws.motHwArray[i].pinDir;
+    doc["motorHws"][i]["pinEn"] = confDevConf.motorHws.motHwArray[i].pinEn;
+  }
+  if(!confWriteFile(confFileDevConf, doc)) {
     ret = false;
   }
 
@@ -118,9 +149,9 @@ bool confWrite() {
 }
 
 String confGetTuningFile(){
-  LOG_F("getFile -> Reading file: %s\n", confFileTuning.c_str());
+  LOG_F("getFile -> Reading file: %s\n", confFileDevConf.c_str());
 
-  File file = SPIFFS.open(confFileTuning);
+  File file = SPIFFS.open(confFileDevConf);
   if(!file || file.isDirectory()) {
     LOG_S("readFile -> failed to open file for reading");
     return "";
