@@ -42,22 +42,22 @@ bool otaNetworkInitSTA(const char* ssid, const char* pass) {
 
 String otaCreatePidTable() {
   String response = "<h1>PID tune</h1><form method=\"POST\"><table><thead><tr><td>idx</td><td>p</td><td>i</td><td>d</td><td>sat</td></tr></thead><tbody>";
-    for(int i=0; i<CONF_PID_COUNT; i++) {
+    for(int i=0; i<CONF_SYS_PID_COUNT; i++) {
       response.concat("<tr><td>" + String(i) + "</td>");
-      response.concat("<td><input type=\"text\" name=\"p" + String(i) + "\" value=\"" + String(confTuning.pid.pidArray[i].p) + "\"></td>");
-      response.concat("<td><input type=\"text\" name=\"i" + String(i) + "\" value=\"" + String(confTuning.pid.pidArray[i].i) + "\"></td>");
-      response.concat("<td><input type=\"text\" name=\"d" + String(i) + "\" value=\"" + String(confTuning.pid.pidArray[i].d) + "\"></td>");
-      response.concat("<td><input type=\"text\" name=\"s" + String(i) + "\" value=\"" + String(confTuning.pid.pidArray[i].sat) + "\"></td></tr>");
+      response.concat("<td><input type=\"text\" name=\"p" + String(i) + "\" value=\"" + String(confSysTuning.pids.pidArray[i].p) + "\"></td>");
+      response.concat("<td><input type=\"text\" name=\"i" + String(i) + "\" value=\"" + String(confSysTuning.pids.pidArray[i].i) + "\"></td>");
+      response.concat("<td><input type=\"text\" name=\"d" + String(i) + "\" value=\"" + String(confSysTuning.pids.pidArray[i].d) + "\"></td>");
+      response.concat("<td><input type=\"text\" name=\"s" + String(i) + "\" value=\"" + String(confSysTuning.pids.pidArray[i].sat) + "\"></td></tr>");
     }
     response.concat("</tbody></table><input type =\"submit\" value =\"Submit\"></form></br><a href=\"/pidraw\">Download JSON</a>");
     return response;
 }
 
 String otaArgProcessor(const String& var){
-  if(var == "conf_wifiSsid") return String(confAuth.wifiSsid);
-  if(var == "conf_btMac") return String(confAuth.btMac);
-  if(var == "conf_nodeId") return String(confTuning.nodeId);
-  if(var == "conf_mode") return String(confTuning.mode);
+  if(var == "conf_wifiSsid") return String(confDevConf.wifiSsid);
+  if(var == "conf_btMac") return String(confDevConf.btMac);
+  if(var == "conf_nodeId") return String(confDevConf.nodeId);
+  if(var == "conf_mode") return String(confDevConf.mode);
 
   if(var == "reg_body_mode") return String(*regsRegisters[REGLIST_BODY(RegList_mode)].data.pi);
   if(var == "reg_body_uptime") return String(*regsRegisters[REGLIST_BODY(RegList_uptime)].data.pi);
@@ -204,9 +204,9 @@ void otaRegisterPages() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/index.html", "text/html", false, otaArgProcessor);
   });
-  server.on("/pidraw", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/json", confGetTuningFile());
-  });
+  // server.on("/pidraw", HTTP_GET, [](AsyncWebServerRequest *request) {
+  //   request->send(200, "text/json", confGetTuningFile());
+  // });
   server.on("/test", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/test.html", "text/html", false, otaArgProcessor);
   });
@@ -220,10 +220,10 @@ void otaRegisterPages() {
       if(p->isPost() && p->name().length() >= 2){
         int idx = p->name().substring(1).toInt();
         switch(p->name()[0]) {
-          case 'p': confTuning.pid.pidArray[idx].p = p->value().toFloat(); break;
-          case 'i': confTuning.pid.pidArray[idx].i = p->value().toFloat(); break;
-          case 'd': confTuning.pid.pidArray[idx].d = p->value().toFloat(); break;
-          case 's': confTuning.pid.pidArray[idx].sat = p->value().toFloat(); break;
+          case 'p': confSysTuning.pids.pidArray[idx].p = p->value().toFloat(); break;
+          case 'i': confSysTuning.pids.pidArray[idx].i = p->value().toFloat(); break;
+          case 'd': confSysTuning.pids.pidArray[idx].d = p->value().toFloat(); break;
+          case 's': confSysTuning.pids.pidArray[idx].sat = p->value().toFloat(); break;
         }
       }
     }
@@ -238,9 +238,9 @@ void otaRegisterPages() {
     for(int i=0;i<params;i++){
       AsyncWebParameter* p = request->getParam(i);
       if(p->isPost()){
-        if (p->name() == "ssid" && p->value() != "") confAuth.wifiSsid = p->value();
-        if (p->name() == "pass" && p->value() != "" && p->value() != "***") confAuth.wifiPass = p->value();
-        if (p->name() == "btmac" && p->value() != "") confAuth.btMac = p->value();
+        if (p->name() == "ssid") confDevConf.wifiSsid = p->value();
+        if (p->name() == "pass" && p->value() != "***") confDevConf.wifiPass = p->value();
+        if (p->name() == "btmac" && p->value() != "") confDevConf.btMac = p->value();
       }
     }
     confWrite();
@@ -248,7 +248,7 @@ void otaRegisterPages() {
   });
   server.on("/mode", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/html", String("Mode switched to bluetooth"));
-    confTuning.mode = CONF_MODE_BT;
+    confDevConf.mode = CONF_MODE_BT;
     confWrite();
     delay(500);
     ESP.restart();
@@ -274,8 +274,8 @@ void otaRegisterPages() {
     for(int i=0;i<params;i++){
       AsyncWebParameter* p = request->getParam(i);
       if(p->isPost()){
-        if (p->name() == "nodeId" && p->value() != "") confTuning.nodeId = p->value().toInt();
-        if (p->name() == "mode" && p->value() != "") confTuning.mode = p->value().toInt();
+        if (p->name() == "nodeId" && p->value() != "") confDevConf.nodeId = p->value().toInt();
+        if (p->name() == "mode" && p->value() != "") confDevConf.mode = p->value().toInt();
       }
     }
     confWrite();
