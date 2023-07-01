@@ -6,8 +6,8 @@
 #define REGLIST_BODY_OFFSET (0)
 #define REGLIST_NECK_OFFSET (RegList_count)
 
-#define REGLIST_IS_NECK (confTuning.nodeId == CONF_NODEID_NECK)
-#define REGLIST_IS_BODY (confTuning.nodeId == CONF_NODEID_BODY)
+#define REGLIST_IS_NECK (confDevConf.nodeId == CONF_NODEID_NECK)
+#define REGLIST_IS_BODY (confDevConf.nodeId == CONF_NODEID_BODY)
 #define REGLIST_IS_VALID (REGLIST_IS_NECK || REGLIST_IS_BODY)
 #define REGLIST_MY_OFFSET (REGLIST_IS_NECK ? (REGLIST_NECK_OFFSET) : (REGLIST_BODY_OFFSET))
 #define REGLIST_OTHER_OFFSET (REGLIST_IS_NECK ? (REGLIST_BODY_OFFSET) : (REGLIST_NECK_OFFSET))
@@ -51,6 +51,12 @@ typedef enum {
     RegList_ctrlForw_sat,
     RegList_ctrlTilt_sat,
     RegList_ctrlRota_sat,
+    RegList_mpuAx,
+    RegList_mpuAy,
+    RegList_mpuAz,
+    RegList_mpuGx,
+    RegList_mpuGy,
+    RegList_mpuGz,
     RegList_count
 } RegList_en;
 
