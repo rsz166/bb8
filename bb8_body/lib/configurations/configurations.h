@@ -21,15 +21,12 @@ typedef struct {
 typedef enum {
   ConfMotMode_disabled = 0,
   ConfMotMode_controlPosition,
-  ConfMotMode_manualPosition,
   ConfMotMode_controlSpeed,
-  ConfMotMode_manualSpeed,
   ConfMotMode_controlAcceleration,
-  ConfMotMode_manualAcceleration,
 } ConfMotMode_t;
 
 typedef struct {
-  uint8_t pinStep,pinDir,pinEn;
+  uint8_t pinStep,pinDir,pinEn,controlMode;
   bool negate;
 } ConfMotHw_t;
 

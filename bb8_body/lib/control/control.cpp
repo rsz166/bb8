@@ -24,7 +24,7 @@ void conHandle() {
 bool conInit() {
     forw.ref = regsRegisters[REGLIST_MY(RegList_ctrlForw_setp)].data.pf;
     forw.feedback = regsRegisters[REGLIST_MY(RegList_ctrlForw_feedback)].data.pf;
-    forw.actuation = regsRegisters[REGLIST_MY(RegList_ctrlForw_act)].data.pf; // TODO: use local "actuation" variable to map and forward to motor, and register it as register
+    forw.actuation = regsRegisters[REGLIST_MY(RegList_ctrlForw_act)].data.pf;
     forw.params = REGLIST_IS_NECK ? &confSysTuning.pids.pidNamed.neckForward : &confSysTuning.pids.pidNamed.bodyForward;
     
     tilt.ref = regsRegisters[REGLIST_MY(RegList_ctrlTilt_setp)].data.pf;

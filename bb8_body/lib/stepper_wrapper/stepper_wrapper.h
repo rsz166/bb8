@@ -4,13 +4,18 @@
 #include <Arduino.h>
 
 #define STEP_COUNT 3
+#define STEP_CONTROL_DISABLED 0
+#define STEP_CONTROL_POSITION 1
+#define STEP_CONTROL_SPEED 2
+#define STEP_CONTROL_ACCEL 3
 
 typedef struct {
-    uint8_t pinStep, pinDir, pinEn;
+    uint8_t pinStep, pinDir, pinEn, controlMode;
     bool negate;
-    float position, speed, accel;
-    bool positionControl, speedControl;
+    float setpoint, speedLimit, accelLimit;
 } StepControl_t;
+
+extern StepControl_t stepControls[STEP_COUNT];
 
 bool stepInit();
 void stepHandle();

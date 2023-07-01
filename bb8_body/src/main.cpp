@@ -131,8 +131,10 @@ void registerRegisters() {
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_i),   &confSysTuning.pids.pidNamed.neckRotate.i,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_d),   &confSysTuning.pids.pidNamed.neckRotate.d,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_sat), &confSysTuning.pids.pidNamed.neckRotate.sat, REGLIST_HAVE_OTA);
-  // TODO: debug only
-  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_act),   &ps3Ypr[2],  REGLIST_HAVE_REMOTE);
+
+  regsAddRegister(REGLIST_MY(RegList_ctrlForw_act),   &stepControls[0].setpoint,  true);
+  regsAddRegister(REGLIST_MY(RegList_ctrlTilt_act),   &stepControls[1].setpoint,  true);
+  regsAddRegister(REGLIST_MY(RegList_ctrlRota_act),   &stepControls[2].setpoint,  true);
 }
 
 // ########### Entry points ############
@@ -171,7 +173,14 @@ void setup() {
   }
   
   Serial.println("Stepper Start...");
-  stepInit(); // TODO: wait for sys config to be downloaded
+  for(int i=0;i<STEP_COUNT;i++) {
+    stepControls[i].pinDir = confDevConf.motorHws.motHwArray[i].pinDir;
+    stepControls[i].pinEn = confDevConf.motorHws.motHwArray[i].pinEn;
+    stepControls[i].pinStep = confDevConf.motorHws.motHwArray[i].pinStep;
+    stepControls[i].negate = confDevConf.motorHws.motHwArray[i].negate;
+    stepControls[i].controlMode = confDevConf.motorHws.motHwArray[i].controlMode;
+  }
+  stepInit();
 
   Serial.println("Regs Start...");
   registerRegisters();
@@ -195,5 +204,4 @@ void loop() {
   }
   intcHandle();
   stepHandle();
-  // stepperSpeed = ps3Ypr[2]; // TODO: debug only
 }

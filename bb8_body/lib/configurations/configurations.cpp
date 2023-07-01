@@ -101,6 +101,7 @@ bool confRead() {
       confDevConf.motorHws.motHwArray[count].pinStep = obj["pinStep"];
       confDevConf.motorHws.motHwArray[count].pinDir = obj["pinDir"];
       confDevConf.motorHws.motHwArray[count].pinEn = obj["pinEn"];
+      confDevConf.motorHws.motHwArray[count].controlMode = obj["controlMode"];
       confDevConf.motorHws.motHwArray[count].negate = obj["negate"];
       count++;
     }
@@ -141,6 +142,7 @@ bool confWrite() {
     doc["motorHws"][i]["pinStep"] = confDevConf.motorHws.motHwArray[i].pinStep;
     doc["motorHws"][i]["pinDir"] = confDevConf.motorHws.motHwArray[i].pinDir;
     doc["motorHws"][i]["pinEn"] = confDevConf.motorHws.motHwArray[i].pinEn;
+    doc["motorHws"][i]["controlMode"] = confDevConf.motorHws.motHwArray[i].controlMode;
     doc["motorHws"][i]["negate"] = confDevConf.motorHws.motHwArray[i].negate;
   }
   if(!confWriteFile(confFileDevConf, doc)) {

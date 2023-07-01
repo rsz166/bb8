@@ -5,7 +5,7 @@
 #define STEP_DIR_COEF(i) (stepControls[i].negate ? -1 : 1)
 
 typedef struct {
-    float position, speed, accel;
+    float setpoint, speedLimit, accelLimit;
 } StepMemory_t;
 
 FastAccelStepperEngine stepEngine = FastAccelStepperEngine();
@@ -25,10 +25,8 @@ bool stepInit() {
                 stepSteppers[i]->setEnablePin(stepControls[i].pinEn);
                 stepSteppers[i]->setAutoEnable(true); // TODO: necessary?
             }
-            stepMemories[i].accel = stepControls[i].accel;
-            stepMemories[i].speed = stepControls[i].speed;
-            stepSteppers[i]->setAcceleration((uint32_t)abs(stepMemories[i].accel));
-            stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].speed));
+            stepMemories[i].accelLimit = 0;
+            stepMemories[i].speedLimit = 0;
         } else {
             ret = false;
         }
@@ -39,41 +37,41 @@ bool stepInit() {
 void stepHandle() {
     for(int i=0; i<STEP_COUNT; i++) {
         if(!stepSteppers[i]) continue;
-        if(stepControls[i].positionControl) {
-            if((stepControls[i].position != stepMemories[i].position) ||
-               (stepControls[i].speed != stepMemories[i].speed) ||
-               (stepControls[i].accel != stepMemories[i].accel)) {
-                stepMemories[i].position = stepControls[i].position;
-                stepMemories[i].speed = stepControls[i].speed;
-                stepMemories[i].accel = stepControls[i].accel;
-                stepSteppers[i]->setAcceleration((uint32_t)abs(stepMemories[i].accel));
-                stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].speed));
-                stepSteppers[i]->moveTo((int32_t)(stepMemories[i].position*STEP_DIR_COEF(i)));
+        if(stepControls[i].controlMode == STEP_CONTROL_POSITION) {
+            if((stepControls[i].setpoint != stepMemories[i].setpoint) ||
+               (stepControls[i].speedLimit != stepMemories[i].speedLimit) ||
+               (stepControls[i].accelLimit != stepMemories[i].accelLimit)) {
+                stepMemories[i].setpoint = stepControls[i].setpoint;
+                stepMemories[i].speedLimit = stepControls[i].speedLimit;
+                stepMemories[i].accelLimit = stepControls[i].accelLimit;
+                stepSteppers[i]->setAcceleration((uint32_t)abs(stepMemories[i].accelLimit));
+                stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].speedLimit));
+                stepSteppers[i]->moveTo((int32_t)(stepMemories[i].setpoint*STEP_DIR_COEF(i)));
             }
-        } else if(stepControls[i].speedControl) {
-            if((stepControls[i].speed != stepMemories[i].speed) ||
-               (stepControls[i].accel != stepMemories[i].accel)) {
-                stepMemories[i].speed = stepControls[i].speed;
-                stepMemories[i].accel = stepControls[i].accel;
-                stepSteppers[i]->setAcceleration((uint32_t)abs(stepMemories[i].accel));
-                if(stepMemories[i].speed == 0) {
+        } else if(stepControls[i].controlMode == STEP_CONTROL_SPEED) {
+            if((stepControls[i].setpoint != stepMemories[i].setpoint) ||
+               (stepControls[i].accelLimit != stepMemories[i].accelLimit)) {
+                stepMemories[i].setpoint = stepControls[i].setpoint;
+                stepMemories[i].accelLimit = stepControls[i].accelLimit;
+                stepSteppers[i]->setAcceleration((uint32_t)abs(stepMemories[i].accelLimit));
+                if(stepMemories[i].setpoint == 0) {
                     stepSteppers[i]->stopMove();
                 } else {
-                    stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].speed));
-                    if((stepMemories[i].speed > 0) == !!stepControls[i].negate) {
+                    stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].setpoint));
+                    if((stepMemories[i].setpoint > 0) == !stepControls[i].negate) {
                         stepSteppers[i]->runForward();
                     } else {
                         stepSteppers[i]->runBackward();
                     }
                 }
             }
-        } else { // acceleration control
-            if((stepControls[i].speed != stepMemories[i].speed) ||
-               (stepControls[i].accel != stepMemories[i].accel)) {
-                stepMemories[i].speed = stepControls[i].speed;
-                stepMemories[i].accel = stepControls[i].accel;
-                stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].speed));
-                stepSteppers[i]->moveByAcceleration((uint32_t)(stepMemories[i].accel*STEP_DIR_COEF(i)));
+        } else if(stepControls[i].controlMode == STEP_CONTROL_ACCEL) { // acceleration control
+            if((stepControls[i].speedLimit != stepMemories[i].speedLimit) ||
+               (stepControls[i].accelLimit != stepMemories[i].accelLimit)) {
+                stepMemories[i].speedLimit = stepControls[i].speedLimit;
+                stepMemories[i].accelLimit = stepControls[i].accelLimit;
+                stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].speedLimit));
+                stepSteppers[i]->moveByAcceleration((uint32_t)(stepMemories[i].setpoint*STEP_DIR_COEF(i)));
             }
         }
     }

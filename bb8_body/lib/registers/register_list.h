@@ -51,6 +51,12 @@ typedef enum {
     RegList_ctrlForw_sat,
     RegList_ctrlTilt_sat,
     RegList_ctrlRota_sat,
+    RegList_mpuAx,
+    RegList_mpuAy,
+    RegList_mpuAz,
+    RegList_mpuGx,
+    RegList_mpuGy,
+    RegList_mpuGz,
     RegList_count
 } RegList_en;
 
