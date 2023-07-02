@@ -3,10 +3,21 @@
 
 #include <Arduino.h>
 
-extern float stepperMove, stepperSpeed;
-extern bool stepperStop;
+#define STEP_COUNT 3
+#define STEP_CONTROL_DISABLED 0
+#define STEP_CONTROL_POSITION 1
+#define STEP_CONTROL_SPEED 2
+#define STEP_CONTROL_ACCEL 3
 
-void stepperInit();
-void stepperDrive();
+typedef struct {
+    uint8_t pinStep, pinDir, pinEn, controlMode;
+    bool negate;
+    float setpoint, speedLimit, accelLimit;
+} StepControl_t;
+
+extern StepControl_t stepControls[STEP_COUNT];
+
+bool stepInit();
+void stepHandle();
 
 #endif

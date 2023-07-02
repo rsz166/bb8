@@ -20,6 +20,9 @@
 // SCH definitions
 #define SCH_CONTROL_PERIOD_US (1000)
 #define SCH_BLINK_PERIOD_US (500000)
+#define SCH_MODE_CHANGE_PERIOD_US (500000)
+#define SCH_UPTIME_PERIOD_US (100000)
+
 #define SCH_BUTTON_HOLD_MS (1500)
 
 // ########### Variables ############
@@ -27,6 +30,9 @@
 uint32_t schTimeUs = 0;
 uint32_t schLastControlExecutionUs = 0;
 uint32_t schLastBlinkExecutionUs = 0;
+uint32_t schLastModeChangeExecutionUs = 0;
+uint32_t schLastUptimeExecutionUs = 0;
+
 uint32_t schUptimeMillisec = 0;
 uint32_t schButtonDownTime = 0;
 
@@ -37,17 +43,15 @@ void taskControl() {
   // otaHandle();
 }
 
-void taskBlink() {
-  schUptimeMillisec += SCH_BLINK_PERIOD_US / 1000;
-  
-  // check if switch to WiFi requested
+void taskModeChange() {
+  // check button
   if(!digitalRead(0)) {
     if(schButtonDownTime == 0) {
       schButtonDownTime = schUptimeMillisec;
     }
     else if((schUptimeMillisec - schButtonDownTime) >= SCH_BUTTON_HOLD_MS) {
-      if(confTuning.mode != CONF_MODE_WIFI) {
-        confTuning.mode = CONF_MODE_WIFI;
+      if(confDevConf.mode != CONF_MODE_WIFI) {
+        confDevConf.mode = CONF_MODE_WIFI;
         confWrite();
         delay(500);
         ESP.restart();
@@ -56,67 +60,81 @@ void taskBlink() {
   } else {
     schButtonDownTime = 0;
   }
+  // check remote command
+  if(*regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi != 0) {
+    int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
+    if(mode != confDevConf.mode) {
+      if(mode == CONF_MODE_BT || mode == CONF_MODE_WIFI) {
+        confDevConf.mode = mode;
+        confWrite();
+        ESP.restart();
+      } else if(mode == 0xffffffff) {
+        ESP.restart();
+      }
+    }
+  }
+}
 
-  // TODO: move these to separate task
-  // if(*regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi != 0) {
-  //   int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
-  //   if(mode != confTuning.mode) {
-  //     if(mode == CONF_MODE_BT || mode == CONF_MODE_WIFI) {
-  //       confTuning.mode = mode;
-  //       confWrite();
-  //     } else if(mode == 0xffffffff) {
-  //       ESP.restart();
-  //     }
-  //   }
-  // }
+void taskUptime() {
+  schUptimeMillisec += SCH_BLINK_PERIOD_US / 1000;
+}
+
+void taskBlink() {
 }
 
 void schRun() {
   schTimeUs = micros();
-  if((schTimeUs - schLastControlExecutionUs) >= SCH_CONTROL_PERIOD_US) {
+  if((schTimeUs - schLastModeChangeExecutionUs) >= SCH_MODE_CHANGE_PERIOD_US) {
+    taskModeChange();
+    schLastModeChangeExecutionUs += SCH_MODE_CHANGE_PERIOD_US;
+  } else if((schTimeUs - schLastControlExecutionUs) >= SCH_CONTROL_PERIOD_US) {
     taskControl();
     schLastControlExecutionUs += SCH_CONTROL_PERIOD_US;
-  }
-  else if((schTimeUs - schLastBlinkExecutionUs) >= SCH_BLINK_PERIOD_US) {
+  } else if((schTimeUs - schLastUptimeExecutionUs) >= SCH_UPTIME_PERIOD_US) {
+    taskUptime();
+    schLastUptimeExecutionUs += SCH_UPTIME_PERIOD_US;
+  } else if((schTimeUs - schLastBlinkExecutionUs) >= SCH_BLINK_PERIOD_US) {
     taskBlink();
     schLastBlinkExecutionUs += SCH_BLINK_PERIOD_US;
   }
 }
 
 void registerRegisters() {
-  regsAddRegister(REGLIST_MY(RegList_mode), &confTuning.mode, true);
+  regsAddRegister(REGLIST_MY(RegList_mode), &confDevConf.mode, true);
   regsAddRegister(REGLIST_MY(RegList_uptime), &schUptimeMillisec, true);
   // regsAddRegister(REGLIST_MY(RegList_errorCode), &??, true);
   // regsAddRegister(REGLIST_MY(RegList_batteryVoltage), &??, true);
   // regsAddRegister(REGLIST_MY(RegList_requestedMode), &??, false);
   
-  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_p),   &confTuning.pid.pidNamed.bodyForward.p,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_i),   &confTuning.pid.pidNamed.bodyForward.i,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_d),   &confTuning.pid.pidNamed.bodyForward.d,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_sat), &confTuning.pid.pidNamed.bodyForward.sat, REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_p),   &confTuning.pid.pidNamed.bodyTilt.p,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_i),   &confTuning.pid.pidNamed.bodyTilt.i,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_d),   &confTuning.pid.pidNamed.bodyTilt.d,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_sat), &confTuning.pid.pidNamed.bodyTilt.sat, REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_p),   &confTuning.pid.pidNamed.bodyRotate.p,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_i),   &confTuning.pid.pidNamed.bodyRotate.i,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_d),   &confTuning.pid.pidNamed.bodyRotate.d,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_sat), &confTuning.pid.pidNamed.bodyRotate.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_p),   &confSysTuning.pids.pidNamed.bodyForward.p,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_i),   &confSysTuning.pids.pidNamed.bodyForward.i,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_d),   &confSysTuning.pids.pidNamed.bodyForward.d,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_sat), &confSysTuning.pids.pidNamed.bodyForward.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_p),   &confSysTuning.pids.pidNamed.bodyTilt.p,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_i),   &confSysTuning.pids.pidNamed.bodyTilt.i,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_d),   &confSysTuning.pids.pidNamed.bodyTilt.d,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_sat), &confSysTuning.pids.pidNamed.bodyTilt.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_p),   &confSysTuning.pids.pidNamed.bodyRotate.p,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_i),   &confSysTuning.pids.pidNamed.bodyRotate.i,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_d),   &confSysTuning.pids.pidNamed.bodyRotate.d,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_sat), &confSysTuning.pids.pidNamed.bodyRotate.sat, REGLIST_HAVE_OTA);
 
-  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_p),   &confTuning.pid.pidNamed.neckForward.p,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_i),   &confTuning.pid.pidNamed.neckForward.i,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_d),   &confTuning.pid.pidNamed.neckForward.d,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_sat), &confTuning.pid.pidNamed.neckForward.sat, REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_p),   &confTuning.pid.pidNamed.neckTilt.p,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_i),   &confTuning.pid.pidNamed.neckTilt.i,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_d),   &confTuning.pid.pidNamed.neckTilt.d,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_sat), &confTuning.pid.pidNamed.neckTilt.sat, REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_p),   &confTuning.pid.pidNamed.neckRotate.p,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_i),   &confTuning.pid.pidNamed.neckRotate.i,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_d),   &confTuning.pid.pidNamed.neckRotate.d,   REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_sat), &confTuning.pid.pidNamed.neckRotate.sat, REGLIST_HAVE_OTA);
-  // TODO: debug only
-  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_act),   &ps3Ypr[2],  REGLIST_HAVE_REMOTE);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_p),   &confSysTuning.pids.pidNamed.neckForward.p,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_i),   &confSysTuning.pids.pidNamed.neckForward.i,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_d),   &confSysTuning.pids.pidNamed.neckForward.d,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_sat), &confSysTuning.pids.pidNamed.neckForward.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_p),   &confSysTuning.pids.pidNamed.neckTilt.p,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_i),   &confSysTuning.pids.pidNamed.neckTilt.i,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_d),   &confSysTuning.pids.pidNamed.neckTilt.d,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_sat), &confSysTuning.pids.pidNamed.neckTilt.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_p),   &confSysTuning.pids.pidNamed.neckRotate.p,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_i),   &confSysTuning.pids.pidNamed.neckRotate.i,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_d),   &confSysTuning.pids.pidNamed.neckRotate.d,   REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_sat), &confSysTuning.pids.pidNamed.neckRotate.sat, REGLIST_HAVE_OTA);
+
+  regsAddRegister(REGLIST_MY(RegList_ctrlForw_act),   &stepControls[0].setpoint,  true);
+  regsAddRegister(REGLIST_MY(RegList_ctrlTilt_act),   &stepControls[1].setpoint,  true);
+  regsAddRegister(REGLIST_MY(RegList_ctrlRota_act),   &stepControls[2].setpoint,  true);
 }
 
 // ########### Entry points ############
@@ -127,8 +145,6 @@ void setup() {
 
   Serial.begin(115200);
   Serial.println("Startup...");
-
-  stepperInit();
 
   pinMode(0, INPUT);
 
@@ -141,9 +157,9 @@ void setup() {
     mpuStart();
   }
 
-  if(confTuning.mode != CONF_MODE_BT) {
+  if(confDevConf.mode != CONF_MODE_BT) {
     Serial.println("OTA Start...");
-    if(otaNetworkInitSTA(confAuth.wifiSsid.c_str(), confAuth.wifiPass.c_str())) {
+    if(otaNetworkInitSTA(confDevConf.wifiSsid.c_str(), confDevConf.wifiPass.c_str())) {
       otaInit();
     } else if(otaNetworkInitAP("ESP")) {
       Serial.println("OTA in AP mode");
@@ -153,11 +169,18 @@ void setup() {
     }
   } else {
     Serial.println("PS3 Start...");
-    ps3Initialize(confAuth.btMac.c_str());
+    ps3Initialize(confDevConf.btMac.c_str());
   }
   
   Serial.println("Stepper Start...");
-  stepperInit();
+  for(int i=0;i<STEP_COUNT;i++) {
+    stepControls[i].pinDir = confDevConf.motorHws.motHwArray[i].pinDir;
+    stepControls[i].pinEn = confDevConf.motorHws.motHwArray[i].pinEn;
+    stepControls[i].pinStep = confDevConf.motorHws.motHwArray[i].pinStep;
+    stepControls[i].negate = confDevConf.motorHws.motHwArray[i].negate;
+    stepControls[i].controlMode = confDevConf.motorHws.motHwArray[i].controlMode;
+  }
+  stepInit();
 
   Serial.println("Regs Start...");
   registerRegisters();
@@ -180,6 +203,5 @@ void loop() {
     // TODO: new data available
   }
   intcHandle();
-  stepperDrive();
-  stepperSpeed = ps3Ypr[2]; // TODO: debug only
+  stepHandle();
 }
