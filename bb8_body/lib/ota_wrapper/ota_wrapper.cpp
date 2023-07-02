@@ -12,10 +12,10 @@
 #include <SPIFFS.h>
 #include <stepper_wrapper.h>
 #include <ArduinoJson.h>
+#include <ota_events.h>
 
 AsyncWebServer server(80);
 bool apMode = false;
-AsyncEventSource events("/events");
 
 bool otaNetworkInitAP(const char* ssid) {
   apMode = true;
@@ -313,17 +313,9 @@ void otaInit() {
   // WebSerial is accessible at "<IP Address>/webserial" in browser
   WebSerial.begin(&server);
 
-  events.onConnect([](AsyncEventSourceClient *client){
-    if(client->lastId()){
-      Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
-    }
-    // send event with message "hello!", id current millis
-    // and set reconnect delay to 1 second
-    client->send("hello!", NULL, millis(), 10000);
-  });
-  server.addHandler(&events);
-  
   server.serveStatic("/", SPIFFS, "/");
+
+  otaeInit(&server);
 
   server.begin();
 
@@ -337,5 +329,4 @@ void otaInit() {
 }
 
 void otaHandle() {
-    events.send(String(micros() & 0xf).c_str(),"test_data",millis());
 }
