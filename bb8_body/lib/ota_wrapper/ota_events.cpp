@@ -21,13 +21,29 @@ void otaeSendConfig() {
     doc["mode"] = confDevConf.mode;
     for(int i=0;i<CONF_DEV_MOT_COUNT;i++) {
         doc["motorHws"][i]["pinStep"] = confDevConf.motorHws.motHwArray[i].pinStep;
-        doc["motHw"][i]["pinDir"] = confDevConf.motorHws.motHwArray[i].pinDir;
-        doc["motHw"][i]["pinEn"] = confDevConf.motorHws.motHwArray[i].pinEn;
-        doc["motHw"][i]["controlMode"] = confDevConf.motorHws.motHwArray[i].controlMode;
-        doc["motHw"][i]["negate"] = confDevConf.motorHws.motHwArray[i].negate;
+        doc["motorHws"][i]["pinDir"] = confDevConf.motorHws.motHwArray[i].pinDir;
+        doc["motorHws"][i]["pinEn"] = confDevConf.motorHws.motHwArray[i].pinEn;
+        doc["motorHws"][i]["controlMode"] = confDevConf.motorHws.motHwArray[i].controlMode;
+        doc["motorHws"][i]["negate"] = confDevConf.motorHws.motHwArray[i].negate;
     }
     serializeJson(doc, buffer, sizeof(buffer));
     events.send(buffer,"config",millis());
+}
+
+void otaeSendTuning() {
+    doc.clear();
+    for(int i=0; i<CONF_SYS_PID_COUNT; i++) {
+      doc["pids"][i]["p"] = confSysTuning.pids.pidArray[i].p;
+      doc["pids"][i]["i"] = confSysTuning.pids.pidArray[i].i;
+      doc["pids"][i]["d"] = confSysTuning.pids.pidArray[i].d;
+      doc["pids"][i]["sat"] = confSysTuning.pids.pidArray[i].sat;
+    }
+    for(int i=0; i<CONF_SYS_MOT_COUNT; i++) {
+      doc["motors"][i]["speed"] = confSysTuning.motors.motArray[i].speed;
+      doc["motors"][i]["accel"] = confSysTuning.motors.motArray[i].accel;
+    }
+    serializeJson(doc, buffer, sizeof(buffer));
+    events.send(buffer,"tuning",millis());
 }
 
 #define OTAE_REGJSON_BODY(name,type,typeNr) doc[#name] = (typeNr == 2) ? (*regsRegisters[REGLIST_BODY(RegList_##name)].data.pf) : (*regsRegisters[REGLIST_BODY(RegList_##name)].data.pi);
@@ -55,7 +71,6 @@ void otaeInit(AsyncWebServer *server) {
 }
 
 void otaeHandle() {
-    events.send(String(micros() & 0xf).c_str(),"test_data",millis());
     odaeSendRegs();
     otaeSendConfig();
 }
