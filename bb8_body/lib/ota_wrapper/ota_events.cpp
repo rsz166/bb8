@@ -11,25 +11,35 @@
 
 AsyncEventSource events("/events");
 StaticJsonDocument<1024> doc;
+char buffer[256];
 
 void otaeSendConfig() {
     doc.clear();
-    doc["wifiSsid"] = confAuth.wifiSsid;
-    doc["btMac"] = confAuth.btMac;
-    doc["nodeId"] = confTuning.nodeId;
-    doc["mode"] = confTuning.mode;
-    for(int i=0;i<CONF_PID_COUNT;i++) {
-        doc["pid"][i]["p"] = confTuning.pid.pidArray[i].p;
-        doc["pid"][i]["i"] = confTuning.pid.pidArray[i].i;
-        doc["pid"][i]["d"] = confTuning.pid.pidArray[i].d;
-        doc["pid"][i]["sat"] = confTuning.pid.pidArray[i].sat;
+    doc["wifiSsid"] = confDevConf.wifiSsid;
+    doc["btMac"] = confDevConf.btMac;
+    doc["nodeId"] = confDevConf.nodeId;
+    doc["mode"] = confDevConf.mode;
+    for(int i=0;i<CONF_DEV_MOT_COUNT;i++) {
+        doc["motorHws"][i]["pinStep"] = confDevConf.motorHws.motHwArray[i].pinStep;
+        doc["motHw"][i]["pinDir"] = confDevConf.motorHws.motHwArray[i].pinDir;
+        doc["motHw"][i]["pinEn"] = confDevConf.motorHws.motHwArray[i].pinEn;
+        doc["motHw"][i]["controlMode"] = confDevConf.motorHws.motHwArray[i].controlMode;
+        doc["motHw"][i]["negate"] = confDevConf.motorHws.motHwArray[i].negate;
     }
-    events.send("","config",millis());
+    serializeJson(doc, buffer, sizeof(buffer));
+    events.send(buffer,"config",millis());
 }
 
-void odaeSendRegs() {
-    events.send("","reg_list",millis());
+// TODO: handle type
+#define OTAE_REGJSON_BODY(name,type) doc[#name] = *regsRegisters[REGLIST_BODY(RegList_##name)].data.pf;
+#define OTAE_REGJSON_NECK(name,type) doc[#name] = *regsRegisters[REGLIST_NECK(RegList_##name)].data.pf;
 
+void odaeSendRegs() {
+    doc.clear();
+    REGLIST_REGS(OTAE_REGJSON_BODY)
+    REGLIST_REGS(OTAE_REGJSON_NECK)
+    serializeJson(doc, buffer, sizeof(buffer));
+    events.send(buffer,"reg_list",millis());
 }
 
 void otaeInit(AsyncWebServer *server) {

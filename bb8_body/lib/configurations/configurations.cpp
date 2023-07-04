@@ -77,7 +77,6 @@ bool confRead() {
     count = 0;
     for(JsonObjectConst obj : objArray) {
       if(count >= CONF_SYS_MOT_COUNT) break;
-      confSysTuning.motors.motArray[count].mode = obj["mode"];
       confSysTuning.motors.motArray[count].speed = obj["speed"];
       confSysTuning.motors.motArray[count].accel = obj["accel"];
       count++;
@@ -123,7 +122,6 @@ bool confWrite() {
     doc["pids"][i]["sat"] = confSysTuning.pids.pidArray[i].sat;
   }
   for(int i=0; i<CONF_SYS_MOT_COUNT; i++) {
-    doc["motors"][i]["mode"] = confSysTuning.motors.motArray[i].mode;
     doc["motors"][i]["speed"] = confSysTuning.motors.motArray[i].speed;
     doc["motors"][i]["accel"] = confSysTuning.motors.motArray[i].accel;
   }

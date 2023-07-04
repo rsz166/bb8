@@ -20,43 +20,48 @@
 #define REGLIST_HAVE_OTA (REGLIST_IS_NECK) // mainly handles OTA parametrization
 #define REGLIST_HAVE_REMOTE (REGLIST_IS_BODY) // mainly handles remote controller
 
+#define REGLIST_REGS(func) \
+    func(mode,int) \
+    func(uptime,int) \
+    func(status,int) \
+    func(errorCode,int) \
+    func(batteryVoltage,float) \
+    func(requestedMode,int) \
+    func(ctrlForw_setp,float) \
+    func(ctrlTilt_setp,float) \
+    func(ctrlRota_setp,float) \
+    func(ctrlForw_feedback,float) \
+    func(ctrlTilt_feedback,float) \
+    func(ctrlRota_feedback,float) \
+    func(ctrlForw_actMode,float) \
+    func(ctrlTilt_actMode,float) \
+    func(ctrlRota_actMode,float) \
+    func(ctrlForw_act,float) \
+    func(ctrlTilt_act,float) \
+    func(ctrlRota_act,float) \
+    func(ctrlForw_p,float) \
+    func(ctrlTilt_p,float) \
+    func(ctrlRota_p,float) \
+    func(ctrlForw_i,float) \
+    func(ctrlTilt_i,float) \
+    func(ctrlRota_i,float) \
+    func(ctrlForw_d,float) \
+    func(ctrlTilt_d,float) \
+    func(ctrlRota_d,float) \
+    func(ctrlForw_sat,float) \
+    func(ctrlTilt_sat,float) \
+    func(ctrlRota_sat,float) \
+    func(mpuAx,float) \
+    func(mpuAy,float) \
+    func(mpuAz,float) \
+    func(mpuGx,float) \
+    func(mpuGy,float) \
+    func(mpuGz,float)
+
+#define REGLIST_ENUMFUNC(name,type) RegList_##name,
+
 typedef enum {
-    RegList_mode = 0,
-    RegList_uptime,
-    RegList_status,
-    RegList_errorCode,
-    RegList_batteryVoltage,
-    RegList_requestedMode,
-    RegList_ctrlForw_setp,
-    RegList_ctrlTilt_setp,
-    RegList_ctrlRota_setp,
-    RegList_ctrlForw_feedback,
-    RegList_ctrlTilt_feedback,
-    RegList_ctrlRota_feedback,
-    RegList_ctrlForw_actMode,
-    RegList_ctrlTilt_actMode,
-    RegList_ctrlRota_actMode,
-    RegList_ctrlForw_act,
-    RegList_ctrlTilt_act,
-    RegList_ctrlRota_act,
-    RegList_ctrlForw_p,
-    RegList_ctrlTilt_p,
-    RegList_ctrlRota_p,
-    RegList_ctrlForw_i,
-    RegList_ctrlTilt_i,
-    RegList_ctrlRota_i,
-    RegList_ctrlForw_d,
-    RegList_ctrlTilt_d,
-    RegList_ctrlRota_d,
-    RegList_ctrlForw_sat,
-    RegList_ctrlTilt_sat,
-    RegList_ctrlRota_sat,
-    RegList_mpuAx,
-    RegList_mpuAy,
-    RegList_mpuAz,
-    RegList_mpuGx,
-    RegList_mpuGy,
-    RegList_mpuGz,
+    REGLIST_REGS(REGLIST_ENUMFUNC)
     RegList_count
 } RegList_en;
 

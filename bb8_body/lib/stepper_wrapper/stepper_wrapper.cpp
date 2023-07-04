@@ -18,17 +18,21 @@ bool stepInit() {
     bool ret = true;
     stepEngine.init();
     for(int i=0; i<STEP_COUNT; i++) {
-        stepSteppers[i] = stepEngine.stepperConnectToPin(stepControls[i].pinStep);
-        if(stepSteppers[i]) {
-            stepSteppers[i]->setDirectionPin(stepControls[i].pinDir);
-            if(stepControls[i].pinEn > 0) {
-                stepSteppers[i]->setEnablePin(stepControls[i].pinEn);
-                stepSteppers[i]->setAutoEnable(true); // TODO: necessary?
+        if(stepControls[i].controlMode != STEP_CONTROL_DISABLED) {
+            stepSteppers[i] = stepEngine.stepperConnectToPin(stepControls[i].pinStep);
+            if(stepSteppers[i]) {
+                if(stepControls[i].pinDir > 0) {
+                    stepSteppers[i]->setDirectionPin(stepControls[i].pinDir);
+                }
+                if(stepControls[i].pinEn > 0) {
+                    stepSteppers[i]->setEnablePin(stepControls[i].pinEn);
+                    stepSteppers[i]->setAutoEnable(true); // TODO: necessary?
+                }
+                stepMemories[i].accelLimit = 0;
+                stepMemories[i].speedLimit = 0;
+            } else {
+                ret = false;
             }
-            stepMemories[i].accelLimit = 0;
-            stepMemories[i].speedLimit = 0;
-        } else {
-            ret = false;
         }
     }
     return ret;
@@ -50,10 +54,16 @@ void stepHandle() {
             }
         } else if(stepControls[i].controlMode == STEP_CONTROL_SPEED) {
             if((stepControls[i].setpoint != stepMemories[i].setpoint) ||
+               (stepControls[i].speedLimit != stepMemories[i].speedLimit) ||
                (stepControls[i].accelLimit != stepMemories[i].accelLimit)) {
                 stepMemories[i].setpoint = stepControls[i].setpoint;
+                stepMemories[i].speedLimit = stepControls[i].speedLimit;
                 stepMemories[i].accelLimit = stepControls[i].accelLimit;
                 stepSteppers[i]->setAcceleration((uint32_t)abs(stepMemories[i].accelLimit));
+                if(abs(stepMemories[i].setpoint) > stepMemories[i].speedLimit) {
+                    if(stepMemories[i].setpoint > 0) stepMemories[i].setpoint = stepMemories[i].speedLimit;
+                    else stepMemories[i].setpoint = -stepMemories[i].speedLimit;
+                }
                 if(stepMemories[i].setpoint == 0) {
                     stepSteppers[i]->stopMove();
                 } else {

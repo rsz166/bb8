@@ -1,6 +1,4 @@
 {
-    "nodeId":1,
-    "mode":2,
     "pids":[
         {"p":0,"i":0,"d":0,"sat":0},
         {"p":0,"i":0,"d":0,"sat":0},
@@ -8,5 +6,13 @@
         {"p":0,"i":0,"d":0,"sat":0},
         {"p":0,"i":0,"d":0,"sat":0},
         {"p":0,"i":0,"d":0,"sat":0}
+    ],
+    "motors":[
+        {"speed":0,"accel":0},
+        {"speed":0,"accel":0},
+        {"speed":0,"accel":0},
+        {"speed":0,"accel":0},
+        {"speed":0,"accel":0},
+        {"speed":0,"accel":0}
     ]
 }

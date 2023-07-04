@@ -2,3 +2,4 @@
 #include <ESPAsyncWebServer.h>
 
 void otaeInit(AsyncWebServer *server);
+void otaeHandle();

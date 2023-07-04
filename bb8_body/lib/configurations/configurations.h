@@ -31,7 +31,6 @@ typedef struct {
 } ConfMotHw_t;
 
 typedef struct {
-  ConfMotMode_t mode;
   float speed, accel; // default speed if in position mode, max speed if in speed mode
 } ConfMotTuning_t;
 
