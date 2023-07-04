@@ -21,44 +21,44 @@
 #define REGLIST_HAVE_REMOTE (REGLIST_IS_BODY) // mainly handles remote controller
 
 #define REGLIST_REGS(func) \
-    func(mode,int) \
-    func(uptime,int) \
-    func(status,int) \
-    func(errorCode,int) \
-    func(batteryVoltage,float) \
-    func(requestedMode,int) \
-    func(ctrlForw_setp,float) \
-    func(ctrlTilt_setp,float) \
-    func(ctrlRota_setp,float) \
-    func(ctrlForw_feedback,float) \
-    func(ctrlTilt_feedback,float) \
-    func(ctrlRota_feedback,float) \
-    func(ctrlForw_actMode,float) \
-    func(ctrlTilt_actMode,float) \
-    func(ctrlRota_actMode,float) \
-    func(ctrlForw_act,float) \
-    func(ctrlTilt_act,float) \
-    func(ctrlRota_act,float) \
-    func(ctrlForw_p,float) \
-    func(ctrlTilt_p,float) \
-    func(ctrlRota_p,float) \
-    func(ctrlForw_i,float) \
-    func(ctrlTilt_i,float) \
-    func(ctrlRota_i,float) \
-    func(ctrlForw_d,float) \
-    func(ctrlTilt_d,float) \
-    func(ctrlRota_d,float) \
-    func(ctrlForw_sat,float) \
-    func(ctrlTilt_sat,float) \
-    func(ctrlRota_sat,float) \
-    func(mpuAx,float) \
-    func(mpuAy,float) \
-    func(mpuAz,float) \
-    func(mpuGx,float) \
-    func(mpuGy,float) \
-    func(mpuGz,float)
+    func(mode,int,1) \
+    func(uptime,int,1) \
+    func(status,int,1) \
+    func(errorCode,int,1) \
+    func(requestedMode,int,1) \
+    func(batteryVoltage,float,2) \
+    func(ctrlForw_setp,float,2) \
+    func(ctrlTilt_setp,float,2) \
+    func(ctrlRota_setp,float,2) \
+    func(ctrlForw_feedback,float,2) \
+    func(ctrlTilt_feedback,float,2) \
+    func(ctrlRota_feedback,float,2) \
+    func(ctrlForw_actMode,float,2) \
+    func(ctrlTilt_actMode,float,2) \
+    func(ctrlRota_actMode,float,2) \
+    func(ctrlForw_act,float,2) \
+    func(ctrlTilt_act,float,2) \
+    func(ctrlRota_act,float,2) \
+    func(ctrlForw_p,float,2) \
+    func(ctrlTilt_p,float,2) \
+    func(ctrlRota_p,float,2) \
+    func(ctrlForw_i,float,2) \
+    func(ctrlTilt_i,float,2) \
+    func(ctrlRota_i,float,2) \
+    func(ctrlForw_d,float,2) \
+    func(ctrlTilt_d,float,2) \
+    func(ctrlRota_d,float,2) \
+    func(ctrlForw_sat,float,2) \
+    func(ctrlTilt_sat,float,2) \
+    func(ctrlRota_sat,float,2) \
+    func(mpuAx,float,2) \
+    func(mpuAy,float,2) \
+    func(mpuAz,float,2) \
+    func(mpuGx,float,2) \
+    func(mpuGy,float,2) \
+    func(mpuGz,float,2)
 
-#define REGLIST_ENUMFUNC(name,type) RegList_##name,
+#define REGLIST_ENUMFUNC(name,type,typeNr) RegList_##name,
 
 typedef enum {
     REGLIST_REGS(REGLIST_ENUMFUNC)

@@ -4,7 +4,6 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncElegantOTA.h>
-#include <WebSerial.h>
 #include <configurations.h>
 #include <log.h>
 #include <registers.h>
@@ -310,8 +309,6 @@ void otaInit() {
   otaRegisterPages();
 
   AsyncElegantOTA.begin(&server);
-  // WebSerial is accessible at "<IP Address>/webserial" in browser
-  WebSerial.begin(&server);
 
   server.serveStatic("/", SPIFFS, "/");
 
@@ -329,4 +326,5 @@ void otaInit() {
 }
 
 void otaHandle() {
+  otaeHandle();
 }

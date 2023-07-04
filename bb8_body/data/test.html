@@ -1,4 +1,74 @@
 <html>
+    <h1>Config</h1>
+    <div id="config"></div>
+    <h1>Tuning</h1>
+    <div id="tuning"></div>
+    <h1>Regs</h1>
+    <div id="regs"></div>
     <p>data:<span id="text1"></span></p>
-    <script src="testScript.js"></script>
+    <script>
+        if (!!window.EventSource) {
+            var source = new EventSource('/events');
+        
+            source.addEventListener('open', function(e) {
+                console.log("Events Connected");
+            }, false);
+        
+            source.addEventListener('error', function(e) {
+            if (e.target.readyState != EventSource.OPEN) {
+                console.log("Events Disconnected");
+            }
+            }, false);
+        
+            source.addEventListener('test_data', function(e) {
+                console.log("test_data", e.data);
+                document.getElementById("text1").innerHTML = e.data;
+            }, false);
+        
+            source.addEventListener('config', function(e) {
+                var jobj = JSON.parse(e.data);
+                var disp = document.getElementById("config");
+                for (var prop in jobj) {
+                    var key = "config_"+prop;
+                    var elem = document.getElementById(key);
+                    if(elem == null) {
+                        elem = document.createElement("p");
+                        elem.setAttribute("id", key);
+                        disp.appendChild(elem);
+                    }
+                    elem.innerHTML = jobj[prop];
+                }
+            }, false);
+        
+            source.addEventListener('tuning', function(e) {
+                var jobj = JSON.parse(e.data);
+                var disp = document.getElementById("tuning");
+                for (var prop in jobj) {
+                    var key = "config_"+prop;
+                    var elem = document.getElementById(key);
+                    if(elem == null) {
+                        elem = document.createElement("p");
+                        elem.setAttribute("id", key);
+                        disp.appendChild(elem);
+                    }
+                    elem.innerHTML = jobj[prop];
+                }
+            }, false);
+        
+            source.addEventListener('regs', function(e) {
+                var jobj = JSON.parse(e.data);
+                var disp = document.getElementById("regs");
+                for (var prop in jobj) {
+                    var key = "regs_"+prop;
+                    var elem = document.getElementById(key);
+                    if(elem == null) {
+                        elem = document.createElement("p");
+                        elem.setAttribute("id", key);
+                        disp.appendChild(elem);
+                    }
+                    elem.innerHTML = jobj[prop];
+                }
+            }, false);
+        }
+    </script>
 </html>

@@ -11,7 +11,7 @@
 
 AsyncEventSource events("/events");
 StaticJsonDocument<1024> doc;
-char buffer[256];
+char buffer[1024];
 
 void otaeSendConfig() {
     doc.clear();
@@ -30,16 +30,15 @@ void otaeSendConfig() {
     events.send(buffer,"config",millis());
 }
 
-// TODO: handle type
-#define OTAE_REGJSON_BODY(name,type) doc[#name] = *regsRegisters[REGLIST_BODY(RegList_##name)].data.pf;
-#define OTAE_REGJSON_NECK(name,type) doc[#name] = *regsRegisters[REGLIST_NECK(RegList_##name)].data.pf;
+#define OTAE_REGJSON_BODY(name,type,typeNr) doc[#name] = (typeNr == 2) ? (*regsRegisters[REGLIST_BODY(RegList_##name)].data.pf) : (*regsRegisters[REGLIST_BODY(RegList_##name)].data.pi);
+#define OTAE_REGJSON_NECK(name,type,typeNr) doc[#name] = (typeNr == 2) ? (*regsRegisters[REGLIST_NECK(RegList_##name)].data.pf) : (*regsRegisters[REGLIST_NECK(RegList_##name)].data.pi);
 
 void odaeSendRegs() {
     doc.clear();
     REGLIST_REGS(OTAE_REGJSON_BODY)
     REGLIST_REGS(OTAE_REGJSON_NECK)
     serializeJson(doc, buffer, sizeof(buffer));
-    events.send(buffer,"reg_list",millis());
+    events.send(buffer,"regs",millis());
 }
 
 void otaeInit(AsyncWebServer *server) {

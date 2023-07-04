@@ -22,6 +22,7 @@
 #define SCH_BLINK_PERIOD_US (500000)
 #define SCH_MODE_CHANGE_PERIOD_US (500000)
 #define SCH_UPTIME_PERIOD_US (100000)
+#define SCH_DATASTREAM_PERIOD_US (100000)
 
 #define SCH_BUTTON_HOLD_MS (1500)
 
@@ -32,6 +33,7 @@ uint32_t schLastControlExecutionUs = 0;
 uint32_t schLastBlinkExecutionUs = 0;
 uint32_t schLastModeChangeExecutionUs = 0;
 uint32_t schLastUptimeExecutionUs = 0;
+uint32_t schLastDataStreamExecutionUs = 0;
 
 uint32_t schUptimeMillisec = 0;
 uint32_t schButtonDownTime = 0;
@@ -40,7 +42,6 @@ uint32_t schButtonDownTime = 0;
 
 void taskControl() {
   // conHandle(); // TODO: test and enable
-  // otaHandle();
 }
 
 void taskModeChange() {
@@ -61,18 +62,18 @@ void taskModeChange() {
     schButtonDownTime = 0;
   }
   // check remote command
-  if(*regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi != 0) {
-    int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
-    if(mode != confDevConf.mode) {
-      if(mode == CONF_MODE_BT || mode == CONF_MODE_WIFI) {
-        confDevConf.mode = mode;
-        confWrite();
-        ESP.restart();
-      } else if(mode == 0xffffffff) {
-        ESP.restart();
-      }
-    }
-  }
+  // if(*regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi != 0) {
+  //   int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
+  //   if(mode != confDevConf.mode) {
+  //     if(mode == CONF_MODE_BT || mode == CONF_MODE_WIFI) {
+  //       confDevConf.mode = mode;
+  //       confWrite();
+  //       ESP.restart();
+  //     } else if(mode == 0xffffffff) {
+  //       ESP.restart();
+  //     }
+  //   }
+  // }
 }
 
 void taskUptime() {
@@ -80,6 +81,10 @@ void taskUptime() {
 }
 
 void taskBlink() {
+}
+
+void taskDataStream() {
+  otaHandle();
 }
 
 void schRun() {
@@ -96,6 +101,9 @@ void schRun() {
   } else if((schTimeUs - schLastBlinkExecutionUs) >= SCH_BLINK_PERIOD_US) {
     taskBlink();
     schLastBlinkExecutionUs += SCH_BLINK_PERIOD_US;
+  } else if((schTimeUs - schLastDataStreamExecutionUs) >= SCH_DATASTREAM_PERIOD_US) {
+    taskDataStream();
+    schLastDataStreamExecutionUs += SCH_DATASTREAM_PERIOD_US;
   }
 }
 
