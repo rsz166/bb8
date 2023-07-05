@@ -5,7 +5,6 @@
     <div id="tuning"></div>
     <h1>Regs</h1>
     <div id="regs"></div>
-    <p>data:<span id="text1"></span></p>
     <script>
         if (!!window.EventSource) {
             var source = new EventSource('/events');
@@ -20,55 +19,54 @@
             }
             }, false);
         
-            source.addEventListener('test_data', function(e) {
-                console.log("test_data", e.data);
-                document.getElementById("text1").innerHTML = e.data;
-            }, false);
-        
-            source.addEventListener('config', function(e) {
-                var jobj = JSON.parse(e.data);
-                var disp = document.getElementById("config");
-                for (var prop in jobj) {
-                    var key = "config_"+prop;
-                    var elem = document.getElementById(key);
-                    if(elem == null) {
-                        elem = document.createElement("p");
-                        elem.setAttribute("id", key);
-                        disp.appendChild(elem);
+            source.addEventListener('config', (e) => eventReceived("config", e.data), false);
+            source.addEventListener('tuning', (e) => eventReceived("tuning", e.data), false);
+            source.addEventListener('regs', (e) => eventReceived("regs", e.data), false);
+        }
+        function eventReceived(cat,str) {
+            var jobj = JSON.parse(str);
+            var disp = document.getElementById(cat);
+            for (var prop in jobj) {
+                updateVariable(cat,prop,jobj[prop]);
+            }
+        }
+        function updateVariable(cat,name,value) {
+            var key = cat+"_"+name;
+            var elem = document.getElementById(key);
+            if(elem == null) {
+                var disp = document.getElementById(cat);
+                var header = document.createElement("label");
+                header.innerHTML = name + ": ";
+                disp.appendChild(header);
+                elem = document.createElement("label");
+                elem.setAttribute("id", key);
+                disp.appendChild(elem);
+                var input = document.createElement("input");
+                input.setAttribute("id", "input_"+key);
+                disp.appendChild(input);
+                var btn = document.createElement("button");
+                btn.addEventListener("click", ()=>setVariable(cat,name));
+                btn.innerHTML = "Set";
+                disp.appendChild(btn);
+                var br = document.createElement("br");
+                disp.appendChild(br);
+            }
+            elem.innerHTML = value;
+        }
+        function setVariable(cat,name) {
+            var input = document.getElementById("input_"+cat+"_"+name);
+            if(input != null) {
+                var value = input.value;
+                fetch("/set?"+cat+"_"+name+"="+value)
+                .then( response => {
+                    if(response.ok) {
+                        input.value = "";
+                        input.style.backgroundColor = "lightgreen";
+                    } else {
+                        input.style.backgroundColor = "lightcoral";
                     }
-                    elem.innerHTML = jobj[prop];
-                }
-            }, false);
-        
-            source.addEventListener('tuning', function(e) {
-                var jobj = JSON.parse(e.data);
-                var disp = document.getElementById("tuning");
-                for (var prop in jobj) {
-                    var key = "config_"+prop;
-                    var elem = document.getElementById(key);
-                    if(elem == null) {
-                        elem = document.createElement("p");
-                        elem.setAttribute("id", key);
-                        disp.appendChild(elem);
-                    }
-                    elem.innerHTML = jobj[prop];
-                }
-            }, false);
-        
-            source.addEventListener('regs', function(e) {
-                var jobj = JSON.parse(e.data);
-                var disp = document.getElementById("regs");
-                for (var prop in jobj) {
-                    var key = "regs_"+prop;
-                    var elem = document.getElementById(key);
-                    if(elem == null) {
-                        elem = document.createElement("p");
-                        elem.setAttribute("id", key);
-                        disp.appendChild(elem);
-                    }
-                    elem.innerHTML = jobj[prop];
-                }
-            }, false);
+                });
+            }
         }
     </script>
 </html>

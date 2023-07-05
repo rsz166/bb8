@@ -199,6 +199,52 @@ void otaSaveParameter(const String& name, const String& value) {
   if(name == "neck_ctrlRota_sat") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_sat)].data.pf = value.toFloat();
 }
 
+#define OTA_REGSET(reg, typeNr, value) if(typeNr==1) *reg.data.pi = value.toInt(); else *reg.data.pf = value.toFloat();
+#define OTA_REGSET_BODY(namex,type,typeNr) if(name == "regs_body_"#namex) {OTA_REGSET(regsRegisters[REGLIST_BODY(RegList_##namex)], typeNr, value) return true;}
+#define OTA_REGSET_NECK(namex,type,typeNr) if(name == "regs_neck_"#namex) {OTA_REGSET(regsRegisters[REGLIST_NECK(RegList_##namex)], typeNr, value) return true;}
+
+bool otaSetParam(const String &name, const String &value) {
+  if(name.startsWith("config_")) {
+    if(name == "config_wifiSsid") { confDevConf.wifiSsid = value; }
+    else if(name == "config_wifiPass") { confDevConf.wifiPass = value; }
+    else if(name == "config_btMac") { confDevConf.btMac = value; }
+    else if(name == "config_mode") { confDevConf.mode = value.toInt(); }
+    else if(name == "config_nodeId") { confDevConf.nodeId = value.toInt(); }
+    else if(name.startsWith("config_motorHws_")) {
+      // config_motorHws_0_pinStep
+      int idx = name[16]-'0';
+      if(name.endsWith("_pinStep")) confDevConf.motorHws.motHwArray[idx].pinStep = value.toInt();
+      else return false;
+    }
+    else return false;
+    confWrite();
+    return true;
+  } else if(name.startsWith("tuning_")) {
+    if(name.startsWith("tuning_motors_")) {
+      // tuning_motors_0_pinStep
+      int idx = name[14]-'0';
+      if(name.endsWith("_accel")) confSysTuning.motors.motArray[idx].accel = value.toFloat();
+      else if(name.endsWith("_speed")) confSysTuning.motors.motArray[idx].speed = value.toFloat();
+      else return false;
+    } else if(name == "tuning_pids") { 
+      // tuning_pids_0_pinStep
+      int idx = name[12]-'0';
+      if(name.endsWith("_p")) confSysTuning.pids.pidArray[idx].p = value.toFloat();
+      else if(name.endsWith("_i")) confSysTuning.pids.pidArray[idx].i = value.toFloat();
+      else if(name.endsWith("_d")) confSysTuning.pids.pidArray[idx].d = value.toFloat();
+      else if(name.endsWith("_sat")) confSysTuning.pids.pidArray[idx].sat = value.toFloat();
+      else return false;
+    }
+    else return false;
+    confWrite();
+    return true;
+  } else if(name.startsWith("regs_")) {
+    REGLIST_REGS(OTA_REGSET_BODY)
+    REGLIST_REGS(OTA_REGSET_NECK)
+  }
+  return false;
+}
+
 void otaRegisterPages() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/index.html", "text/html", false, otaArgProcessor);
@@ -303,6 +349,24 @@ void otaRegisterPages() {
   server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
     request->send(200);
   }, otaHandleUpload);
+  server.on("/set", HTTP_POST, [](AsyncWebServerRequest *request) {
+    int params = request->params();
+    bool ret = true;
+    for(int i=0;i<params;i++){
+      AsyncWebParameter* p = request->getParam(i);
+      if(!otaSetParam(p->name(), p->value())) ret = false;
+    }
+    request->send(ret ? 200 : 400, "text/html", ret ? "Ok" : "Error");
+  });
+  server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request) {
+    int params = request->params();
+    bool ret = true;
+    for(int i=0;i<params;i++){
+      AsyncWebParameter* p = request->getParam(i);
+      if(!otaSetParam(p->name(), p->value())) ret = false;
+    }
+    request->send(ret ? 200 : 400, "text/html", ret ? "Ok" : "Error");
+  });
 }
 
 void otaInit() {
