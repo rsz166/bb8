@@ -226,8 +226,8 @@ bool otaSetParam(const String &name, const String &value) {
       if(name.endsWith("_accel")) confSysTuning.motors.motArray[idx].accel = value.toFloat();
       else if(name.endsWith("_speed")) confSysTuning.motors.motArray[idx].speed = value.toFloat();
       else return false;
-    } else if(name == "tuning_pids") { 
-      // tuning_pids_0_pinStep
+    } else if(name.startsWith("tuning_pids_")) { 
+      // tuning_pids_0_p
       int idx = name[12]-'0';
       if(name.endsWith("_p")) confSysTuning.pids.pidArray[idx].p = value.toFloat();
       else if(name.endsWith("_i")) confSysTuning.pids.pidArray[idx].i = value.toFloat();
