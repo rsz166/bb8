@@ -245,16 +245,20 @@ bool otaSetParam(const String &name, const String &value) {
   return false;
 }
 
+#define OTA_REGISTER_HTML(name,method) server.on("/" name, method, [](AsyncWebServerRequest *request) { request->send(SPIFFS, "/" name ".html", "text/html", false, otaArgProcessor); });
+
 void otaRegisterPages() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/index.html", "text/html", false, otaArgProcessor);
   });
-  // server.on("/pidraw", HTTP_GET, [](AsyncWebServerRequest *request) {
-  //   request->send(200, "text/json", confGetTuningFile());
-  // });
-  server.on("/test", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/test.html", "text/html", false, otaArgProcessor);
-  });
+  OTA_REGISTER_HTML("test", HTTP_GET);
+  OTA_REGISTER_HTML("auth", HTTP_GET);
+  OTA_REGISTER_HTML("reg", HTTP_GET);
+  OTA_REGISTER_HTML("params", HTTP_GET);
+  OTA_REGISTER_HTML("motor", HTTP_GET);
+  OTA_REGISTER_HTML("upload", HTTP_GET);
+  OTA_REGISTER_HTML("mpu", HTTP_GET);
+
   server.on("/pid", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/html", otaCreatePidTable());
   });
@@ -274,9 +278,6 @@ void otaRegisterPages() {
     }
     confWrite();
     request->send(200, "text/html", otaCreatePidTable());
-  });
-  server.on("/auth", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/auth.html", "text/html", false, otaArgProcessor);
   });
   server.on("/auth", HTTP_POST, [](AsyncWebServerRequest *request) {
     int params = request->params();
@@ -298,37 +299,6 @@ void otaRegisterPages() {
     delay(500);
     ESP.restart();
   });
-  server.on("/reg", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/reg.html", "text/html", false, otaArgProcessor);
-  });
-  server.on("/reg", HTTP_POST, [](AsyncWebServerRequest *request) {
-    AsyncWebParameter* submit = request->getParam("submit", true);
-    if(submit != nullptr) {
-      AsyncWebParameter* p = request->getParam(submit->value(), true);
-      if(p != nullptr) {
-        otaSaveParameter(p->name(), p->value());
-      }
-    }
-    request->send(SPIFFS, "/reg.html", "text/html", false, otaArgProcessor);
-  });
-  server.on("/params", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/params.html", "text/html", false, otaArgProcessor);
-  });
-  server.on("/params", HTTP_POST, [](AsyncWebServerRequest *request) {
-    int params = request->params();
-    for(int i=0;i<params;i++){
-      AsyncWebParameter* p = request->getParam(i);
-      if(p->isPost()){
-        if (p->name() == "nodeId" && p->value() != "") confDevConf.nodeId = p->value().toInt();
-        if (p->name() == "mode" && p->value() != "") confDevConf.mode = p->value().toInt();
-      }
-    }
-    confWrite();
-    request->send(SPIFFS, "/params.html", "text/html", false, otaArgProcessor);
-  });
-  server.on("/motor", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/motor.html", "text/html", false, otaArgProcessor);
-  });
   server.on("/motor", HTTP_POST, [](AsyncWebServerRequest *request) {
     int params = request->params();
     for(int i=0;i<params;i++){
@@ -342,9 +312,6 @@ void otaRegisterPages() {
       // }
     }
     request->send(SPIFFS, "/motor.html", "text/html", false, otaArgProcessor);
-  });
-  server.on("/upload", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/upload.html", "text/html", false, otaArgProcessor);
   });
   server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
     request->send(200);

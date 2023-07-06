@@ -1,9 +1,67 @@
 <html>
     <h1>Configuration parameters</h1>
-    <form method="POST">
-        <label>Node ID</label><input type="text" name="nodeId" value="%conf_nodeId%"/><br/>
-        <label>Mode</label><input type="text" name="mode" value="%conf_mode%"/><br/>
-        <input type ="submit" value ="Submit">
-    </form>
+    <div id="config"></div>
     <a href="/">Home</a>
+    <script>
+        if (!!window.EventSource) {
+            var source = new EventSource('/events');
+        
+            source.addEventListener('open', function(e) {
+                console.log("Events Connected");
+            }, false);
+        
+            source.addEventListener('error', function(e) {
+            if (e.target.readyState != EventSource.OPEN) {
+                console.log("Events Disconnected");
+            }
+            }, false);
+        
+            source.addEventListener('config', (e) => eventReceived("config", e.data), false);
+        }
+        function eventReceived(cat,str) {
+            var jobj = JSON.parse(str);
+            var disp = document.getElementById(cat);
+            for (var prop in jobj) {
+                updateVariable(cat,prop,jobj[prop]);
+            }
+        }
+        function updateVariable(cat,name,value) {
+            var key = cat+"_"+name;
+            var elem = document.getElementById(key);
+            if(elem == null) {
+                var disp = document.getElementById(cat);
+                var header = document.createElement("label");
+                header.innerHTML = name + ": ";
+                disp.appendChild(header);
+                elem = document.createElement("label");
+                elem.setAttribute("id", key);
+                disp.appendChild(elem);
+                var input = document.createElement("input");
+                input.setAttribute("id", "input_"+key);
+                disp.appendChild(input);
+                var btn = document.createElement("button");
+                btn.addEventListener("click", ()=>setVariable(cat,name));
+                btn.innerHTML = "Set";
+                disp.appendChild(btn);
+                var br = document.createElement("br");
+                disp.appendChild(br);
+            }
+            elem.innerHTML = value;
+        }
+        function setVariable(cat,name) {
+            var input = document.getElementById("input_"+cat+"_"+name);
+            if(input != null) {
+                var value = input.value;
+                fetch("/set?"+cat+"_"+name+"="+value)
+                .then( response => {
+                    if(response.ok) {
+                        input.value = "";
+                        input.style.backgroundColor = "lightgreen";
+                    } else {
+                        input.style.backgroundColor = "lightcoral";
+                    }
+                });
+            }
+        }
+    </script>
 </html>
