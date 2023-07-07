@@ -7,21 +7,21 @@
     </head>
     <body>
         <div class="topnav">
-          <h1><i class="far fa-compass"></i> MPU6050 <i class="far fa-compass"></i></h1>
+          <h1><i class="far fa-compass"></i> MPU <i class="far fa-compass"></i></h1>
         </div>
         <div class="content">
           <div class="cards">
             <div class="card">
-              <p class="card-title">GYROSCOPE</p>
-              <p><span class="reading">X: <span id="gyroX"></span> rad</span></p>
-              <p><span class="reading">Y: <span id="gyroY"></span> rad</span></p>
-              <p><span class="reading">Z: <span id="gyroZ"></span> rad</span></p>
+              <p class="card-title">Body</p>
+              <p><span class="reading">X: <span id="body_gyroX"></span> rad</span></p>
+              <p><span class="reading">Y: <span id="body_gyroY"></span> rad</span></p>
+              <p><span class="reading">Z: <span id="body_gyroZ"></span> rad</span></p>
             </div>
             <div class="card">
-              <p class="card-title">ACCELEROMETER</p>
-              <p><span class="reading">X: <span id="accX"></span> ms<sup>2</sup></span></p>
-              <p><span class="reading">Y: <span id="accY"></span> ms<sup>2</sup></span></p>
-              <p><span class="reading">Z: <span id="accZ"></span> ms<sup>2</sup></span></p>
+              <p class="card-title">Neck</p>
+              <p><span class="reading">X: <span id="neck_gyroX"></span> rad</span></p>
+              <p><span class="reading">Y: <span id="neck_gyroY"></span> rad</span></p>
+              <p><span class="reading">Z: <span id="neck_gyroZ"></span> rad</span></p>
             </div>
           </div>
           <div class="cube-content">
@@ -29,7 +29,7 @@
           </div>
         </div>
         <script>
-let scene, camera, rendered, cube;
+let scene, camera, rendered, cube_body, cube_neck;
 
 function parentWidth(elem) {
   return elem.parentElement.clientWidth;
@@ -65,8 +65,12 @@ function init3D(){
 
   const material = new THREE.MeshFaceMaterial(cubeMaterials);
 
-  cube = new THREE.Mesh(geometry, material);
-  scene.add(cube);
+  cube_body = new THREE.Mesh(geometry, material);
+  scene.add(cube_body);
+  cube_neck = new THREE.Mesh(geometry, material);
+  scene.add(cube_neck);
+  cube_body.position.x = -4;
+  cube_neck.position.x = 4;
   camera.position.z = 5;
   renderer.render(scene, camera);
 }
@@ -101,17 +105,20 @@ if (!!window.EventSource) {
 
   source.addEventListener('regs', function(e) {
     var obj = JSON.parse(e.data);
-    document.getElementById("gyroX").innerHTML = obj.neck_mpuGx;
-    document.getElementById("gyroY").innerHTML = obj.neck_mpuGy;
-    document.getElementById("gyroZ").innerHTML = obj.neck_mpuGz;
-    document.getElementById("accX").innerHTML = obj.neck_mpuAx;
-    document.getElementById("accY").innerHTML = obj.neck_mpuAy;
-    document.getElementById("accZ").innerHTML = obj.neck_mpuAz;
+    document.getElementById("body_gyroX").innerHTML = obj.body_mpuGx;
+    document.getElementById("body_gyroY").innerHTML = obj.body_mpuGy;
+    document.getElementById("body_gyroZ").innerHTML = obj.body_mpuGz;
+    document.getElementById("neck_gyroX").innerHTML = obj.neck_mpuGx;
+    document.getElementById("neck_gyroY").innerHTML = obj.neck_mpuGy;
+    document.getElementById("neck_gyroZ").innerHTML = obj.neck_mpuGz;
 
     // Change cube rotation after receiving the readinds
-    cube.rotation.x = obj.neck_mpuGy;
-    cube.rotation.z = obj.neck_mpuGx;
-    cube.rotation.y = obj.neck_mpuGz;
+    cube_body.rotation.x = obj.body_mpuGy;
+    cube_body.rotation.z = obj.body_mpuGx;
+    cube_body.rotation.y = obj.body_mpuGz;
+    cube_neck.rotation.x = obj.neck_mpuGy;
+    cube_neck.rotation.z = obj.neck_mpuGx;
+    cube_neck.rotation.y = obj.neck_mpuGz;
     renderer.render(scene, camera);
   }, false);
 }
