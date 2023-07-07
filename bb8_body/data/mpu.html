@@ -101,17 +101,17 @@ if (!!window.EventSource) {
 
   source.addEventListener('regs', function(e) {
     var obj = JSON.parse(e.data);
-    document.getElementById("gyroX").innerHTML = obj.body_mpuGx;
-    document.getElementById("gyroY").innerHTML = obj.body_mpuGy;
-    document.getElementById("gyroZ").innerHTML = obj.body_mpuGz;
-    document.getElementById("accX").innerHTML = obj.body_mpuAx;
-    document.getElementById("accY").innerHTML = obj.body_mpuAy;
-    document.getElementById("accZ").innerHTML = obj.body_mpuAz;
+    document.getElementById("gyroX").innerHTML = obj.neck_mpuGx;
+    document.getElementById("gyroY").innerHTML = obj.neck_mpuGy;
+    document.getElementById("gyroZ").innerHTML = obj.neck_mpuGz;
+    document.getElementById("accX").innerHTML = obj.neck_mpuAx;
+    document.getElementById("accY").innerHTML = obj.neck_mpuAy;
+    document.getElementById("accZ").innerHTML = obj.neck_mpuAz;
 
     // Change cube rotation after receiving the readinds
-    cube.rotation.x = obj.body_mpuGy;
-    cube.rotation.z = obj.body_mpuGx;
-    cube.rotation.y = obj.body_mpuGz;
+    cube.rotation.x = obj.neck_mpuGy;
+    cube.rotation.z = obj.neck_mpuGx;
+    cube.rotation.y = obj.neck_mpuGz;
     renderer.render(scene, camera);
   }, false);
 }

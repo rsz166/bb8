@@ -10,4 +10,6 @@ void mpuLoadCalibration();
 void mpuStart();
 bool mpuTryRead();
 
+extern float mpuYpr[3];
+
 #endif

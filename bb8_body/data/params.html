@@ -20,9 +20,20 @@
         }
         function eventReceived(cat,str) {
             var jobj = JSON.parse(str);
-            var disp = document.getElementById(cat);
-            for (var prop in jobj) {
-                updateVariable(cat,prop,jobj[prop]);
+            variableReceived(cat, "", jobj);
+        }
+        function variableReceived(cat, name, x) {
+            if(Array.isArray(x)) {
+                for(var i=0; i<x.length; i++) {
+                    variableReceived(cat, name+"_"+i, x[i]);
+                }
+            } else if(typeof x === "object") {
+                for (var prop in x) {
+                    var n = (name != "") ? name + "_" + prop : prop;
+                    variableReceived(cat, n, x[prop]);
+                }
+            } else {
+                updateVariable(cat, name, x);
             }
         }
         function updateVariable(cat,name,value) {
