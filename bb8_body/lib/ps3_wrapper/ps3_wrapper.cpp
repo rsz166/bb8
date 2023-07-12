@@ -3,10 +3,9 @@
 #include <log.h>
 #include <Ps3Controller.h>
 
-#define PS3_MAX_YAW  (100) // TODO
-#define PS3_MAX_PITCH  (100) // TODO
-#define PS3_MAX_ROLL  (100) // TODO
-#define PS3_MAX_JOY  (100) // TODO
+#define PS3_MAX_YPR  (100)
+#define PS3_MAX_JOY  (100) // joy values are -128..+127, but not all joy can reach these values, therefore it's limited to smaller range
+#define PS3_MIN_JOY  (20)
 
 
 bool ps3MotorEnable = false;
@@ -14,17 +13,39 @@ bool ps3MotorEnable = false;
 // Pitch: rotate body backwards - angle
 // Roll: tilt body right - angle
 float ps3Ypr_body[3] = {0,0,0};
+float ps3ZeroOffset[3];
+
+float ps3Sign(float val) {
+  return val >= 0 ? 1 : -1;
+}
+
+float ps3Scale(float val) {
+  if(val < PS3_MIN_JOY && val > -PS3_MIN_JOY) return 0;
+  if(val > PS3_MAX_JOY) return PS3_MAX_YPR;
+  if(val < -PS3_MAX_JOY) return -PS3_MAX_YPR;
+  return (val - (ps3Sign(val) * PS3_MIN_JOY)) / (PS3_MAX_JOY - PS3_MIN_JOY) * PS3_MAX_YPR;
+}
 
 void ps3Notify() {
   // hold R1 or L1 to enable movement
-  ps3MotorEnable = (Ps3.data.button.l1 || Ps3.data.button.r1);
+  bool enable = (Ps3.data.button.l1 || Ps3.data.button.r1);
+  if(enable != ps3MotorEnable) {
+    if(enable) {
+      // save zero offset
+      ps3ZeroOffset[0] = Ps3.data.analog.stick.lx;
+      ps3ZeroOffset[1] = Ps3.data.analog.stick.ly;
+      ps3ZeroOffset[2] = Ps3.data.analog.stick.rx;
+    } else {
+      // clear output
+      for(int i=0; i<3; i++) ps3Ypr_body[i] = 0;
+    }
+  }
+  ps3MotorEnable = enable;
   if(ps3MotorEnable) {
     // adjust yaw/pith/roll with joys
-    ps3Ypr_body[0] = ((float)Ps3.data.analog.stick.lx) / PS3_MAX_JOY * PS3_MAX_YAW;
-    ps3Ypr_body[1] = -((float)Ps3.data.analog.stick.ry) / PS3_MAX_JOY * PS3_MAX_PITCH;
-    ps3Ypr_body[2] = ((float)Ps3.data.analog.stick.rx) / PS3_MAX_JOY * PS3_MAX_ROLL;
-  } else {
-    for(int i=0; i<3; i++) ps3Ypr_body[i] = 0;
+    ps3Ypr_body[0] = ps3Scale(Ps3.data.analog.stick.lx-ps3ZeroOffset[0]);
+    ps3Ypr_body[1] = ps3Scale(-(Ps3.data.analog.stick.ry-ps3ZeroOffset[1]));
+    ps3Ypr_body[2] = ps3Scale(Ps3.data.analog.stick.rx-ps3ZeroOffset[2]);
   }
   LOG_F("t%u\tl %i %i\tr%i %i\tb%i %i\ta%i %i %i\tg%i\n",
     millis(),

@@ -62,18 +62,18 @@ void taskModeChange() {
     schButtonDownTime = 0;
   }
   // check remote command
-  // if(*regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi != 0) {
-  //   int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
-  //   if(mode != confDevConf.mode) {
-  //     if(mode == CONF_MODE_BT || mode == CONF_MODE_WIFI) {
-  //       confDevConf.mode = mode;
-  //       confWrite();
-  //       ESP.restart();
-  //     } else if(mode == 0xffffffff) {
-  //       ESP.restart();
-  //     }
-  //   }
-  // }
+  int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
+  if(mode != 0) {
+    if(mode != confDevConf.mode) {
+      if(mode == CONF_MODE_BT || mode == CONF_MODE_WIFI) {
+        confDevConf.mode = mode;
+        confWrite();
+        ESP.restart();
+      } else if(mode == 0xff) {
+        ESP.restart();
+      }
+    }
+  }
 }
 
 void taskUptime() {
@@ -110,9 +110,10 @@ void schRun() {
 void registerRegisters() {
   regsAddRegister(REGLIST_MY(RegList_mode), &confDevConf.mode, true);
   regsAddRegister(REGLIST_MY(RegList_uptime), &schUptimeMillisec, true);
-  // regsAddRegister(REGLIST_MY(RegList_errorCode), &??, true);
+  regsAddRegister(REGLIST_MY(RegList_errorCode), nullptr, true);
   // regsAddRegister(REGLIST_MY(RegList_batteryVoltage), &??, true);
-  // regsAddRegister(REGLIST_MY(RegList_requestedMode), &??, false);
+  regsAddRegister(REGLIST_MY(RegList_requestedMode), nullptr, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_OTHER(RegList_requestedMode), nullptr, REGLIST_HAVE_OTA);
   
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_p),   &confSysTuning.pids.pidNamed.bodyForward.p,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_i),   &confSysTuning.pids.pidNamed.bodyForward.i,   REGLIST_HAVE_OTA);
