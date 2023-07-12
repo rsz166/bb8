@@ -18,7 +18,7 @@ bool stepInit() {
     bool ret = true;
     stepEngine.init();
     for(int i=0; i<STEP_COUNT; i++) {
-        if(stepControls[i].controlMode != STEP_CONTROL_DISABLED) {
+        if((stepControls[i].controlMode != STEP_CONTROL_DISABLED) && (stepControls[i].pinStep != 0)) {
             stepSteppers[i] = stepEngine.stepperConnectToPin(stepControls[i].pinStep);
             if(stepSteppers[i]) {
                 if(stepControls[i].pinDir > 0) {

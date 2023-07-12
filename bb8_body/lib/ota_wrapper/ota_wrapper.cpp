@@ -16,6 +16,10 @@
 AsyncWebServer server(80);
 bool apMode = false;
 
+void otaApConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+  Serial.println("Device connected to AP");
+}
+
 bool otaNetworkInitAP(const char* ssid) {
   apMode = true;
   WiFi.disconnect();
@@ -25,6 +29,7 @@ bool otaNetworkInitAP(const char* ssid) {
   IPAddress subnet(255, 255, 255, 0);
   if(ret) {
     ret = WiFi.softAPConfig(ip, gateway, subnet);
+    WiFi.onEvent(otaApConnected, SYSTEM_EVENT_AP_STACONNECTED);
   }
   return ret;
 }
@@ -35,6 +40,7 @@ bool otaNetworkInitSTA(const char* ssid, const char* pass) {
     return false;
   }
   WiFi.mode(WIFI_STA);
+  WiFi.setHostname("bb8");
   WiFi.begin(ssid, pass);
   return WiFi.waitForConnectResult() == WL_CONNECTED;
 }
@@ -70,9 +76,6 @@ String otaArgProcessor(const String& var){
   if(var == "reg_body_ctrlForw_feedback") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_feedback)].data.pf);
   if(var == "reg_body_ctrlTilt_feedback") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_feedback)].data.pf);
   if(var == "reg_body_ctrlRota_feedback") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_feedback)].data.pf);
-  if(var == "reg_body_ctrlForw_actMode") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_actMode)].data.pf);
-  if(var == "reg_body_ctrlTilt_actMode") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_actMode)].data.pf);
-  if(var == "reg_body_ctrlRota_actMode") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_actMode)].data.pf);
   if(var == "reg_body_ctrlForw_act") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlForw_act)].data.pf);
   if(var == "reg_body_ctrlTilt_act") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlTilt_act)].data.pf);
   if(var == "reg_body_ctrlRota_act") return String(*regsRegisters[REGLIST_BODY(RegList_ctrlRota_act)].data.pf);
@@ -100,9 +103,6 @@ String otaArgProcessor(const String& var){
   if(var == "reg_neck_ctrlForw_feedback") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_feedback)].data.pf);
   if(var == "reg_neck_ctrlTilt_feedback") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_feedback)].data.pf);
   if(var == "reg_neck_ctrlRota_feedback") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_feedback)].data.pf);
-  if(var == "reg_neck_ctrlForw_actMode") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_actMode)].data.pf);
-  if(var == "reg_neck_ctrlTilt_actMode") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_actMode)].data.pf);
-  if(var == "reg_neck_ctrlRota_actMode") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_actMode)].data.pf);
   if(var == "reg_neck_ctrlForw_act") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlForw_act)].data.pf);
   if(var == "reg_neck_ctrlTilt_act") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlTilt_act)].data.pf);
   if(var == "reg_neck_ctrlRota_act") return String(*regsRegisters[REGLIST_NECK(RegList_ctrlRota_act)].data.pf);
@@ -153,9 +153,6 @@ void otaSaveParameter(const String& name, const String& value) {
   if(name == "body_ctrlForw_feedback") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_feedback)].data.pf = value.toFloat();
   if(name == "body_ctrlTilt_feedback") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_feedback)].data.pf = value.toFloat();
   if(name == "body_ctrlRota_feedback") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_feedback)].data.pf = value.toFloat();
-  if(name == "body_ctrlForw_actMode") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_actMode)].data.pf = value.toFloat();
-  if(name == "body_ctrlTilt_actMode") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_actMode)].data.pf = value.toFloat();
-  if(name == "body_ctrlRota_actMode") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_actMode)].data.pf = value.toFloat();
   if(name == "body_ctrlForw_act") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_act)].data.pf = value.toFloat();
   if(name == "body_ctrlTilt_act") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_act)].data.pf = value.toFloat();
   if(name == "body_ctrlRota_act") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_act)].data.pf = value.toFloat();
@@ -179,9 +176,6 @@ void otaSaveParameter(const String& name, const String& value) {
   if(name == "neck_ctrlForw_feedback") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_feedback)].data.pf = value.toFloat();
   if(name == "neck_ctrlTilt_feedback") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_feedback)].data.pf = value.toFloat();
   if(name == "neck_ctrlRota_feedback") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_feedback)].data.pf = value.toFloat();
-  if(name == "neck_ctrlForw_actMode") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_actMode)].data.pf = value.toFloat();
-  if(name == "neck_ctrlTilt_actMode") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_actMode)].data.pf = value.toFloat();
-  if(name == "neck_ctrlRota_actMode") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_actMode)].data.pf = value.toFloat();
   if(name == "neck_ctrlForw_act") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_act)].data.pf = value.toFloat();
   if(name == "neck_ctrlTilt_act") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_act)].data.pf = value.toFloat();
   if(name == "neck_ctrlRota_act") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_act)].data.pf = value.toFloat();
@@ -199,9 +193,9 @@ void otaSaveParameter(const String& name, const String& value) {
   if(name == "neck_ctrlRota_sat") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_sat)].data.pf = value.toFloat();
 }
 
-#define OTA_REGSET(reg, typeNr, value) if(typeNr==1) *reg.data.pi = value.toInt(); else *reg.data.pf = value.toFloat();
-#define OTA_REGSET_BODY(namex,type,typeNr) if(name == "regs_body_"#namex) {OTA_REGSET(regsRegisters[REGLIST_BODY(RegList_##namex)], typeNr, value) return true;}
-#define OTA_REGSET_NECK(namex,type,typeNr) if(name == "regs_neck_"#namex) {OTA_REGSET(regsRegisters[REGLIST_NECK(RegList_##namex)], typeNr, value) return true;}
+#define OTA_REGSET(reg, type, value) if(type==REGLIST_TYPE_INT) *reg.data.pi = value.toInt(); else *reg.data.pf = value.toFloat();
+#define OTA_REGSET_BODY(namex,type) if(name == "regs_body_"#namex) {OTA_REGSET(regsRegisters[REGLIST_BODY(RegList_##namex)], type, value) return true;}
+#define OTA_REGSET_NECK(namex,type) if(name == "regs_neck_"#namex) {OTA_REGSET(regsRegisters[REGLIST_NECK(RegList_##namex)], type, value) return true;}
 
 bool otaSetParam(const String &name, const String &value) {
   if(name.startsWith("config_")) {
@@ -249,6 +243,7 @@ bool otaSetParam(const String &name, const String &value) {
 
 void otaRegisterPages() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    Serial.println("Index page opened");
     request->send(SPIFFS, "/index.html", "text/html", false, otaArgProcessor);
   });
   OTA_REGISTER_HTML("test", HTTP_GET);
@@ -348,11 +343,12 @@ void otaInit() {
   server.begin();
 
   Serial.println("Ready");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
   if(apMode) {
     Serial.print("AP IP address: ");
     Serial.println(WiFi.softAPIP());
+  } else {
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
   }
 }
 

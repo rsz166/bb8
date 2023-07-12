@@ -46,8 +46,8 @@ void otaeSendTuning() {
     events.send(buffer,"tuning",millis());
 }
 
-#define OTAE_REGJSON_BODY(name,type,typeNr) doc["body_"#name] = (typeNr == 2) ? (*regsRegisters[REGLIST_BODY(RegList_##name)].data.pf) : (*regsRegisters[REGLIST_BODY(RegList_##name)].data.pi);
-#define OTAE_REGJSON_NECK(name,type,typeNr) doc["neck_"#name] = (typeNr == 2) ? (*regsRegisters[REGLIST_NECK(RegList_##name)].data.pf) : (*regsRegisters[REGLIST_NECK(RegList_##name)].data.pi);
+#define OTAE_REGJSON_BODY(name,type) doc["body_"#name] = (type == REGLIST_TYPE_FLOAT) ? (*regsRegisters[REGLIST_BODY(RegList_##name)].data.pf) : (*regsRegisters[REGLIST_BODY(RegList_##name)].data.pi);
+#define OTAE_REGJSON_NECK(name,type) doc["neck_"#name] = (type == REGLIST_TYPE_FLOAT) ? (*regsRegisters[REGLIST_NECK(RegList_##name)].data.pf) : (*regsRegisters[REGLIST_NECK(RegList_##name)].data.pi);
 
 void odaeSendRegs() {
     doc.clear();
