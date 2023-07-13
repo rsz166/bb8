@@ -147,6 +147,7 @@ void otaSaveParameter(const String& name, const String& value) {
   LOG_F("Set %s=%s\n", name.c_str(), value.c_str());
   if(name == "body_mode") *regsRegisters[REGLIST_BODY(RegList_mode)].data.pi = value.toInt();
   if(name == "body_requestedMode") *regsRegisters[REGLIST_BODY(RegList_requestedMode)].data.pi = value.toInt();
+  if(name == "body_enableMotors") *regsRegisters[REGLIST_BODY(RegList_enableMotors)].data.pi = value.toInt();
   if(name == "body_ctrlForw_setp") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_setp)].data.pf = value.toFloat();
   if(name == "body_ctrlTilt_setp") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_setp)].data.pf = value.toFloat();
   if(name == "body_ctrlRota_setp") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_setp)].data.pf = value.toFloat();
@@ -168,8 +169,12 @@ void otaSaveParameter(const String& name, const String& value) {
   if(name == "body_ctrlForw_sat") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_sat)].data.pf = value.toFloat();
   if(name == "body_ctrlTilt_sat") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_sat)].data.pf = value.toFloat();
   if(name == "body_ctrlRota_sat") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_sat)].data.pf = value.toFloat();
+  if(name == "body_ctrlForw_isOpenLoop") *regsRegisters[REGLIST_BODY(RegList_ctrlForw_isOpenLoop)].data.pf = value.toFloat();
+  if(name == "body_ctrlTilt_isOpenLoop") *regsRegisters[REGLIST_BODY(RegList_ctrlTilt_isOpenLoop)].data.pf = value.toFloat();
+  if(name == "body_ctrlRota_isOpenLoop") *regsRegisters[REGLIST_BODY(RegList_ctrlRota_isOpenLoop)].data.pf = value.toFloat();
   if(name == "neck_mode") *regsRegisters[REGLIST_NECK(RegList_mode)].data.pi = value.toInt();
   if(name == "neck_requestedMode") *regsRegisters[REGLIST_NECK(RegList_requestedMode)].data.pi = value.toInt();
+  if(name == "neck_enableMotors") *regsRegisters[REGLIST_NECK(RegList_enableMotors)].data.pi = value.toInt();
   if(name == "neck_ctrlForw_setp") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_setp)].data.pf = value.toFloat();
   if(name == "neck_ctrlTilt_setp") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_setp)].data.pf = value.toFloat();
   if(name == "neck_ctrlRota_setp") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_setp)].data.pf = value.toFloat();
@@ -191,6 +196,9 @@ void otaSaveParameter(const String& name, const String& value) {
   if(name == "neck_ctrlForw_sat") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_sat)].data.pf = value.toFloat();
   if(name == "neck_ctrlTilt_sat") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_sat)].data.pf = value.toFloat();
   if(name == "neck_ctrlRota_sat") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_sat)].data.pf = value.toFloat();
+  if(name == "neck_ctrlForw_isOpenLoop") *regsRegisters[REGLIST_NECK(RegList_ctrlForw_isOpenLoop)].data.pf = value.toFloat();
+  if(name == "neck_ctrlTilt_isOpenLoop") *regsRegisters[REGLIST_NECK(RegList_ctrlTilt_isOpenLoop)].data.pf = value.toFloat();
+  if(name == "neck_ctrlRota_isOpenLoop") *regsRegisters[REGLIST_NECK(RegList_ctrlRota_isOpenLoop)].data.pf = value.toFloat();
 }
 
 #define OTA_REGSET(reg, type, value) if(type==REGLIST_TYPE_INT) *reg.data.pi = value.toInt(); else *reg.data.pf = value.toFloat();

@@ -1,7 +1,9 @@
 #ifndef CONTROL_H_
 #define CONTROL_H_
 
-extern bool isEnabled;
+#include <Arduino.h>
+
+extern uint32_t conIsEnabled;
 
 void conHandle();
 bool conInit();

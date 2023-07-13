@@ -16,6 +16,7 @@
 
 typedef struct {
   float p, i, d, sat;
+  int isOpenLoop;
 } ConfPIDParam_t;
 
 typedef enum {

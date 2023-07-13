@@ -28,6 +28,7 @@
     func(status,REGLIST_TYPE_INT) \
     func(errorCode,REGLIST_TYPE_INT) \
     func(requestedMode,REGLIST_TYPE_INT) \
+    func(enableMotors,REGLIST_TYPE_INT) \
     func(batteryVoltage,REGLIST_TYPE_FLOAT) \
     func(ctrlForw_setp,REGLIST_TYPE_FLOAT) \
     func(ctrlTilt_setp,REGLIST_TYPE_FLOAT) \
@@ -50,6 +51,9 @@
     func(ctrlForw_sat,REGLIST_TYPE_FLOAT) \
     func(ctrlTilt_sat,REGLIST_TYPE_FLOAT) \
     func(ctrlRota_sat,REGLIST_TYPE_FLOAT) \
+    func(ctrlForw_isOpenLoop,REGLIST_TYPE_FLOAT) \
+    func(ctrlTilt_isOpenLoop,REGLIST_TYPE_FLOAT) \
+    func(ctrlRota_isOpenLoop,REGLIST_TYPE_FLOAT) \
     func(mpuAx,REGLIST_TYPE_FLOAT) \
     func(mpuAy,REGLIST_TYPE_FLOAT) \
     func(mpuAz,REGLIST_TYPE_FLOAT) \

@@ -71,6 +71,7 @@ bool confRead() {
       confSysTuning.pids.pidArray[count].i = obj["i"];
       confSysTuning.pids.pidArray[count].d = obj["d"];
       confSysTuning.pids.pidArray[count].sat = obj["sat"];
+      confSysTuning.pids.pidArray[count].isOpenLoop = obj["isOpenLoop"];
       count++;
     }
     objArray = doc["motors"].as<JsonArrayConst>();
@@ -120,6 +121,7 @@ bool confWrite() {
     doc["pids"][i]["i"] = confSysTuning.pids.pidArray[i].i;
     doc["pids"][i]["d"] = confSysTuning.pids.pidArray[i].d;
     doc["pids"][i]["sat"] = confSysTuning.pids.pidArray[i].sat;
+    doc["pids"][i]["isOpenLoop"] = confSysTuning.pids.pidArray[i].isOpenLoop;
   }
   for(int i=0; i<CONF_SYS_MOT_COUNT; i++) {
     doc["motors"][i]["speed"] = confSysTuning.motors.motArray[i].speed;
