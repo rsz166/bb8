@@ -224,4 +224,5 @@ void loop() {
   }
   intcHandle();
   stepHandle();
+  ps3Handle();
 }
