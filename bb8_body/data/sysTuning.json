@@ -1,18 +1,18 @@
 {
     "pids":[
-        {"p":1,"i":0,"d":0,"sat":100,"isOpenLoop":0},
-        {"p":1,"i":0,"d":0,"sat":100,"isOpenLoop":0},
-        {"p":1,"i":0,"d":0,"sat":100,"isOpenLoop":0},
-        {"p":1,"i":0,"d":0,"sat":100,"isOpenLoop":0},
-        {"p":1,"i":0,"d":0,"sat":100,"isOpenLoop":0},
-        {"p":1,"i":0,"d":0,"sat":100,"isOpenLoop":0}
+        {"p":30,"i":0,"d":0,"sat":7000,"isOpenLoop":1},
+        {"p":30,"i":0,"d":0,"sat":7000,"isOpenLoop":1},
+        {"p":30,"i":0,"d":0,"sat":7000,"isOpenLoop":1},
+        {"p":30,"i":0,"d":0,"sat":7000,"isOpenLoop":1},
+        {"p":30,"i":0,"d":0,"sat":7000,"isOpenLoop":1},
+        {"p":30,"i":0,"d":0,"sat":7000,"isOpenLoop":1}
     ],
     "motors":[
-        {"speed":0,"accel":0},
-        {"speed":0,"accel":0},
-        {"speed":0,"accel":0},
-        {"speed":0,"accel":0},
-        {"speed":0,"accel":0},
-        {"speed":0,"accel":0}
+        {"speed":7000,"accel":10000},
+        {"speed":7000,"accel":10000},
+        {"speed":7000,"accel":10000},
+        {"speed":7000,"accel":10000},
+        {"speed":7000,"accel":10000},
+        {"speed":7000,"accel":10000}
     ]
 }

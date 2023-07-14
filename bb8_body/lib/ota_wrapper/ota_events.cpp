@@ -10,8 +10,8 @@
 #include <ArduinoJson.h>
 
 AsyncEventSource events("/events");
-StaticJsonDocument<2048> doc;
-char buffer[2048]; // TODO: check regs
+StaticJsonDocument<2548> doc;
+char buffer[2548]; // TODO: check regs
 
 void otaeSendConfig() {
     doc.clear();

@@ -1,6 +1,7 @@
 #include <stepper_wrapper.h>
 #include <Arduino.h>
 #include <FastAccelStepper.h>
+#include <log.h>
 
 #define STEP_DIR_COEF(i) (stepControls[i].negate ? -1 : 1)
 
@@ -12,6 +13,7 @@ FastAccelStepperEngine stepEngine = FastAccelStepperEngine();
 FastAccelStepper *stepSteppers[STEP_COUNT] = {NULL};
 StepControl_t stepControls[STEP_COUNT] = {0};
 StepMemory_t stepMemories[STEP_COUNT] = {0};
+volatile bool stepEnable = false;
 
 // initalize stepper motors
 bool stepInit() {
@@ -43,28 +45,32 @@ void stepHandle() {
         if(!stepSteppers[i]) continue;
         if(stepControls[i].controlMode == STEP_CONTROL_POSITION) {
             if((stepControls[i].setpoint != stepMemories[i].setpoint) ||
-               (stepControls[i].speedLimit != stepMemories[i].speedLimit) ||
-               (stepControls[i].accelLimit != stepMemories[i].accelLimit)) {
+               (*stepControls[i].speedLimit != stepMemories[i].speedLimit) ||
+               (*stepControls[i].accelLimit != stepMemories[i].accelLimit)) {
                 stepMemories[i].setpoint = stepControls[i].setpoint;
-                stepMemories[i].speedLimit = stepControls[i].speedLimit;
-                stepMemories[i].accelLimit = stepControls[i].accelLimit;
+                stepMemories[i].speedLimit = *stepControls[i].speedLimit;
+                stepMemories[i].accelLimit = *stepControls[i].accelLimit;
                 stepSteppers[i]->setAcceleration((uint32_t)abs(stepMemories[i].accelLimit));
                 stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].speedLimit));
-                stepSteppers[i]->moveTo((int32_t)(stepMemories[i].setpoint*STEP_DIR_COEF(i)));
+                if(stepEnable) {
+                    stepSteppers[i]->moveTo((int32_t)(stepMemories[i].setpoint*STEP_DIR_COEF(i)));
+                } else {
+                    stepSteppers[i]->stopMove();
+                }
             }
         } else if(stepControls[i].controlMode == STEP_CONTROL_SPEED) {
             if((stepControls[i].setpoint != stepMemories[i].setpoint) ||
-               (stepControls[i].speedLimit != stepMemories[i].speedLimit) ||
-               (stepControls[i].accelLimit != stepMemories[i].accelLimit)) {
+               (*stepControls[i].speedLimit != stepMemories[i].speedLimit) ||
+               (*stepControls[i].accelLimit != stepMemories[i].accelLimit)) {
                 stepMemories[i].setpoint = stepControls[i].setpoint;
-                stepMemories[i].speedLimit = stepControls[i].speedLimit;
-                stepMemories[i].accelLimit = stepControls[i].accelLimit;
+                stepMemories[i].speedLimit = *stepControls[i].speedLimit;
+                stepMemories[i].accelLimit = *stepControls[i].accelLimit;
                 stepSteppers[i]->setAcceleration((uint32_t)abs(stepMemories[i].accelLimit));
                 if(abs(stepMemories[i].setpoint) > stepMemories[i].speedLimit) {
                     if(stepMemories[i].setpoint > 0) stepMemories[i].setpoint = stepMemories[i].speedLimit;
                     else stepMemories[i].setpoint = -stepMemories[i].speedLimit;
                 }
-                if(stepMemories[i].setpoint == 0) {
+                if(!stepEnable || (stepMemories[i].setpoint == 0)) {
                     stepSteppers[i]->stopMove();
                 } else {
                     stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].setpoint));
@@ -76,12 +82,16 @@ void stepHandle() {
                 }
             }
         } else if(stepControls[i].controlMode == STEP_CONTROL_ACCEL) { // acceleration control
-            if((stepControls[i].speedLimit != stepMemories[i].speedLimit) ||
-               (stepControls[i].accelLimit != stepMemories[i].accelLimit)) {
-                stepMemories[i].speedLimit = stepControls[i].speedLimit;
-                stepMemories[i].accelLimit = stepControls[i].accelLimit;
-                stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].speedLimit));
-                stepSteppers[i]->moveByAcceleration((uint32_t)(stepMemories[i].setpoint*STEP_DIR_COEF(i)));
+            if(stepEnable) {
+                if((*stepControls[i].speedLimit != stepMemories[i].speedLimit) ||
+                (*stepControls[i].accelLimit != stepMemories[i].accelLimit)) {
+                    stepMemories[i].speedLimit = *stepControls[i].speedLimit;
+                    stepMemories[i].accelLimit = *stepControls[i].accelLimit;
+                    stepSteppers[i]->setSpeedInHz((uint32_t)abs(stepMemories[i].speedLimit));
+                    stepSteppers[i]->moveByAcceleration((uint32_t)(stepMemories[i].setpoint*STEP_DIR_COEF(i)));
+                }
+            } else {
+                stepSteppers[i]->stopMove();
             }
         }
     }

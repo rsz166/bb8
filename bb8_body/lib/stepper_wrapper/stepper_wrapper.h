@@ -12,10 +12,11 @@
 typedef struct {
     uint8_t pinStep, pinDir, pinEn, controlMode;
     bool negate;
-    float setpoint, speedLimit, accelLimit;
+    float setpoint, *speedLimit, *accelLimit;
 } StepControl_t;
 
 extern StepControl_t stepControls[STEP_COUNT];
+extern volatile bool stepEnable;
 
 bool stepInit();
 void stepHandle();

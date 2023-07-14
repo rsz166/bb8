@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#define REGS_REG_CNT    (80)
+#define REGS_REG_CNT    (90)
 
 typedef struct {
     union {

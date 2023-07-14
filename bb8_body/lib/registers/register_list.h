@@ -51,9 +51,15 @@
     func(ctrlForw_sat,REGLIST_TYPE_FLOAT) \
     func(ctrlTilt_sat,REGLIST_TYPE_FLOAT) \
     func(ctrlRota_sat,REGLIST_TYPE_FLOAT) \
-    func(ctrlForw_isOpenLoop,REGLIST_TYPE_FLOAT) \
-    func(ctrlTilt_isOpenLoop,REGLIST_TYPE_FLOAT) \
-    func(ctrlRota_isOpenLoop,REGLIST_TYPE_FLOAT) \
+    func(ctrlForw_isOpenLoop,REGLIST_TYPE_INT) \
+    func(ctrlTilt_isOpenLoop,REGLIST_TYPE_INT) \
+    func(ctrlRota_isOpenLoop,REGLIST_TYPE_INT) \
+    func(ctrlForw_speedLimit,REGLIST_TYPE_FLOAT) \
+    func(ctrlTilt_speedLimit,REGLIST_TYPE_FLOAT) \
+    func(ctrlRota_speedLimit,REGLIST_TYPE_FLOAT) \
+    func(ctrlForw_accelLimit,REGLIST_TYPE_FLOAT) \
+    func(ctrlTilt_accelLimit,REGLIST_TYPE_FLOAT) \
+    func(ctrlRota_accelLimit,REGLIST_TYPE_FLOAT) \
     func(mpuAx,REGLIST_TYPE_FLOAT) \
     func(mpuAy,REGLIST_TYPE_FLOAT) \
     func(mpuAz,REGLIST_TYPE_FLOAT) \

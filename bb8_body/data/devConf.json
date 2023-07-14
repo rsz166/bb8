@@ -13,10 +13,10 @@
             "negate":false
         },
         {
-            "pinStep":0,
-            "pinDir":0,
+            "pinStep":23,
+            "pinDir":22,
             "pinEn":0,
-            "controlMode":0,
+            "controlMode":2,
             "negate":false
         },
         {

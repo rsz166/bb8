@@ -30,7 +30,7 @@ void ps3SetEnable(bool enable);
 // Roll: tilt body right - angle
 float ps3Ypr_body[3] = {0,0,0};
 float ps3Ypr_neck[3] = {0,0,0};
-bool ps3MotorEnable = false;
+uint32_t ps3MotorEnable = 0;
 float ps3Battery = 0;
 float ps3BodyZeroOffset[3] = {0,0,0};
 float ps3NeckZeroOffset[3] = {0,0,0};

@@ -6,10 +6,13 @@
 #define INTC_SERIAL Serial2
 #define INTC_FRAMESIZE      (7)
 #define INTC_FRAME_HEADER   (0x55)
+#define INTC_TIMEOUT_US     (200000)
 
 uint8_t intcRegTxCounter;
 uint8_t intcRxBuffer[INTC_FRAMESIZE];
 uint32_t intcRxBuffWriteIdx, intcRxBuffStartIdx;
+uint32_t intcLastReceivedUs = 0;
+bool intcTimeoutFlg = false;
 
 bool intcInit() {
     INTC_SERIAL.begin(115200);
@@ -76,7 +79,10 @@ void intcReceiveAll() {
         } else {
             intcRxBuffer[intcRxBuffWriteIdx++] = data;
             if(intcRxBuffWriteIdx == INTC_FRAMESIZE) {
-                if(!intcCheckRxFrame()) {
+                if(intcCheckRxFrame()) {
+                    intcLastReceivedUs = micros();
+                    intcTimeoutFlg = false;
+                } else {
                     LOG_F("INTC Invalid frame with ID: %i\n", intcRxBuffer[1]);
                 }
                 intcRxBuffWriteIdx = 0;
@@ -88,4 +94,7 @@ void intcReceiveAll() {
 void intcHandle() {
     intcSendNext();
     intcReceiveAll();
+    if((micros() - intcLastReceivedUs) > INTC_TIMEOUT_US) {
+        intcTimeoutFlg = true;
+    }
 }

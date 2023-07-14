@@ -19,10 +19,10 @@
 
 // SCH definitions
 #define SCH_CONTROL_PERIOD_US (1000)
-#define SCH_BLINK_PERIOD_US (500000)
+#define SCH_BLINK_PERIOD_US (250000)
 #define SCH_MODE_CHANGE_PERIOD_US (500000)
 #define SCH_UPTIME_PERIOD_US (100000)
-#define SCH_DATASTREAM_PERIOD_US (200000)
+#define SCH_DATASTREAM_PERIOD_US (250000)
 
 #define SCH_BUTTON_HOLD_MS (1500)
 
@@ -34,6 +34,7 @@ uint32_t schLastBlinkExecutionUs = 0;
 uint32_t schLastModeChangeExecutionUs = 0;
 uint32_t schLastUptimeExecutionUs = 0;
 uint32_t schLastDataStreamExecutionUs = 0;
+uint8_t schmBlinkCounter = 0;
 
 uint32_t schUptimeMillisec = 0;
 uint32_t schButtonDownTime = 0;
@@ -82,6 +83,8 @@ void taskUptime() {
 }
 
 void taskBlink() {
+  int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
+  digitalWrite(BUILTIN_LED, (schmBlinkCounter++ & mode) ? HIGH : LOW);
 }
 
 void taskDataStream() {
@@ -117,8 +120,10 @@ void registerRegisters() {
   // regsAddRegister(REGLIST_MY(RegList_batteryVoltage), &??, true);
   regsAddRegister(REGLIST_MY(RegList_requestedMode), nullptr, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_OTHER(RegList_requestedMode), nullptr, REGLIST_HAVE_OTA);
-  regsAddRegister(REGLIST_MY(RegList_enableMotors), &conIsEnabled, REGLIST_HAVE_OTA); // TODO: fill based on ps3
-  regsAddRegister(REGLIST_OTHER(RegList_enableMotors), &conIsEnabled, REGLIST_HAVE_OTA);
+  if(REGLIST_HAVE_REMOTE) {
+    regsAddRegister(REGLIST_MY(RegList_enableMotors), &ps3MotorEnable, true);
+    regsAddRegister(REGLIST_OTHER(RegList_enableMotors), &ps3MotorEnable, true);
+  }
   
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_p),   &confSysTuning.pids.pidNamed.bodyForward.p,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_i),   &confSysTuning.pids.pidNamed.bodyForward.i,   REGLIST_HAVE_OTA);
@@ -167,11 +172,31 @@ void registerRegisters() {
   if(REGLIST_HAVE_REMOTE) {
     regsAddRegister(REGLIST_MY(RegList_batteryVoltage), &ps3Battery, true);
   }
+
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_speedLimit), &confSysTuning.motors.motNamed.bodyForward.speed, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_speedLimit), &confSysTuning.motors.motNamed.bodyTilt.speed, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_speedLimit), &confSysTuning.motors.motNamed.bodyRotate.speed, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_speedLimit), &confSysTuning.motors.motNamed.neckForward.speed, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_speedLimit), &confSysTuning.motors.motNamed.neckTilt.speed, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_speedLimit), &confSysTuning.motors.motNamed.neckRotate.speed, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_accelLimit), &confSysTuning.motors.motNamed.bodyForward.accel, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_accelLimit), &confSysTuning.motors.motNamed.bodyTilt.accel, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_accelLimit), &confSysTuning.motors.motNamed.bodyRotate.accel, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_accelLimit), &confSysTuning.motors.motNamed.neckForward.accel, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_accelLimit), &confSysTuning.motors.motNamed.neckTilt.accel, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_accelLimit), &confSysTuning.motors.motNamed.neckRotate.accel, REGLIST_HAVE_OTA);
+}
+
+void checkTimeouts() {
+  bool enable = !intcTimeoutFlg && *regsRegisters[REGLIST_MY(RegList_enableMotors)].data.pi;
+  conIsEnabled = enable;
+  stepEnable = enable;
 }
 
 // ########### Entry points ############
 
 void setup() {
+  pinMode(BUILTIN_LED, OUTPUT);
   mpuHwInit(PIN_I2C_SDA, PIN_I2C_SCL, PIN_MPU_IT);
   regsInit();
 
@@ -217,6 +242,11 @@ void setup() {
 
   Serial.println("Regs Start...");
   registerRegisters();
+  
+  for(int i=0;i<STEP_COUNT;i++) {
+    stepControls[i].accelLimit = &confSysTuning.motors.motArray[i + (REGLIST_IS_NECK ? 3 : 0)].accel;
+    stepControls[i].speedLimit = &confSysTuning.motors.motArray[i + (REGLIST_IS_NECK ? 3 : 0)].speed;
+  }
 
   Serial.println("Internal com Start...");
   intcInit();
@@ -239,4 +269,5 @@ void loop() {
   if(schIsInitBt) {
     ps3Handle();
   }
+  checkTimeouts();
 }
