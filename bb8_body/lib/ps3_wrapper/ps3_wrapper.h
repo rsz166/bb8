@@ -5,7 +5,7 @@
 
 void ps3Initialize(const char* mac);
 void ps3Handle();
-extern float ps3Ypr_body[3], ps3Ypr_neck[3], ps3Battery;
+extern float ps3Ftr_body[3], ps3Ftr_neck[3], ps3Battery;
 extern uint32_t ps3MotorEnable;
 
 #endif

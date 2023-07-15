@@ -9,12 +9,12 @@
 #define PS3_TIMEOUT_US  (200000)
 #define PS3_TIMEOUT_RESET_US  (2000000)
 
-// #define PS3_BODY_Y (Ps3.data.analog.stick.lx)
-#define PS3_BODY_P (-Ps3.data.analog.stick.ly)
-#define PS3_BODY_R (Ps3.data.analog.stick.lx)
-// #define PS3_NECK_Y (Ps3.data.analog.stick.rx)
-#define PS3_NECK_P (-Ps3.data.analog.stick.ry)
-#define PS3_NECK_R (Ps3.data.analog.stick.rx)
+#define PS3_BODY_F (-Ps3.data.analog.stick.ly)
+#define PS3_BODY_T (Ps3.data.analog.stick.lx)
+// #define PS3_BODY_R (Ps3.data.analog.stick.lx)
+#define PS3_NECK_F (-Ps3.data.analog.stick.ry)
+#define PS3_NECK_T (Ps3.data.analog.stick.rx)
+// #define PS3_NECK_R (Ps3.data.analog.stick.rx)
 
 void ps3Notify();
 void ps3OnConnect();
@@ -25,11 +25,11 @@ void ps3UpdateMotors();
 void ps3UpdateTimeout();
 void ps3SetEnable(bool enable);
 
-// Yaw: use momentum wheel to turn right - derivative of angle
-// Pitch: rotate body forward - angle
-// Roll: tilt body right - angle
-float ps3Ypr_body[3] = {0,0,0};
-float ps3Ypr_neck[3] = {0,0,0};
+// Forward: rotate body forward - angle
+// Tilt: tilt body right - angle
+// Rotation: use momentum wheel to turn right - derivative of angle
+float ps3Ftr_body[3] = {0,0,0};
+float ps3Ftr_neck[3] = {0,0,0};
 uint32_t ps3MotorEnable = 0;
 float ps3Battery = 0;
 float ps3BodyZeroOffset[3] = {0,0,0};
@@ -51,20 +51,20 @@ float ps3Scale(float val) {
 
 void ps3SaveOffset() {
   // save zero offset
-  #ifdef PS3_BODY_Y
-  ps3BodyZeroOffset[0] = PS3_BODY_Y;
+  #ifdef PS3_BODY_F
+  ps3BodyZeroOffset[0] = PS3_BODY_F;
   #endif
-  #ifdef PS3_BODY_P
-  ps3BodyZeroOffset[1] = PS3_BODY_P;
+  #ifdef PS3_BODY_T
+  ps3BodyZeroOffset[1] = PS3_BODY_T;
   #endif
   #ifdef PS3_BODY_R
   ps3BodyZeroOffset[2] = PS3_BODY_R;
   #endif
-  #ifdef PS3_NECK_Y
-  ps3NeckZeroOffset[0] = PS3_NECK_Y;
+  #ifdef PS3_NECK_F
+  ps3NeckZeroOffset[0] = PS3_NECK_F;
   #endif
-  #ifdef PS3_NECK_P
-  ps3NeckZeroOffset[1] = PS3_NECK_P;
+  #ifdef PS3_NECK_T
+  ps3NeckZeroOffset[1] = PS3_NECK_T;
   #endif
   #ifdef PS3_NECK_R
   ps3NeckZeroOffset[2] = PS3_NECK_R;
@@ -73,23 +73,23 @@ void ps3SaveOffset() {
 
 void ps3UpdateMotors() {
     // get yaw/pith/roll from joys
-    #ifdef PS3_BODY_Y
-    ps3Ypr_body[0] = ps3Scale(PS3_BODY_Y-ps3BodyZeroOffset[0]);
+    #ifdef PS3_BODY_F
+    ps3Ftr_body[0] = ps3Scale(PS3_BODY_F-ps3BodyZeroOffset[0]);
     #endif
-    #ifdef PS3_BODY_P
-    ps3Ypr_body[1] = ps3Scale(PS3_BODY_P-ps3BodyZeroOffset[1]);
+    #ifdef PS3_BODY_T
+    ps3Ftr_body[1] = ps3Scale(PS3_BODY_T-ps3BodyZeroOffset[1]);
     #endif
     #ifdef PS3_BODY_R
-    ps3Ypr_body[2] = ps3Scale(PS3_BODY_R-ps3BodyZeroOffset[2]);
+    ps3Ftr_body[2] = ps3Scale(PS3_BODY_R-ps3BodyZeroOffset[2]);
     #endif
-    #ifdef PS3_NECK_Y
-    ps3Ypr_neck[0] = ps3Scale(PS3_NECK_Y-ps3NeckZeroOffset[0]);
+    #ifdef PS3_NECK_F
+    ps3Ftr_neck[0] = ps3Scale(PS3_NECK_F-ps3NeckZeroOffset[0]);
     #endif
-    #ifdef PS3_NECK_P
-    ps3Ypr_neck[1] = ps3Scale(PS3_NECK_P-ps3NeckZeroOffset[1]);
+    #ifdef PS3_NECK_T
+    ps3Ftr_neck[1] = ps3Scale(PS3_NECK_T-ps3NeckZeroOffset[1]);
     #endif
     #ifdef PS3_NECK_R
-    ps3Ypr_neck[2] = ps3Scale(PS3_NECK_R-ps3NeckZeroOffset[2]);
+    ps3Ftr_neck[2] = ps3Scale(PS3_NECK_R-ps3NeckZeroOffset[2]);
     #endif
 }
 
@@ -103,8 +103,8 @@ void ps3SetEnable(bool enable) {
     ps3SaveOffset();
   } else {
     // clear output
-    for(int i=0; i<3; i++) ps3Ypr_body[i] = 0;
-    for(int i=0; i<3; i++) ps3Ypr_neck[i] = 0;
+    for(int i=0; i<3; i++) ps3Ftr_body[i] = 0;
+    for(int i=0; i<3; i++) ps3Ftr_neck[i] = 0;
   }
   ps3MotorEnable = enable;
 }
@@ -164,7 +164,7 @@ void ps3OnTimeout() {
 }
 
 void ps3Initialize(const char* mac) {
-  for(int i=0; i<3; i++) ps3Ypr_body[i] = 0;
+  for(int i=0; i<3; i++) ps3Ftr_body[i] = 0;
   Ps3.attach(ps3Notify);
   Ps3.attachOnConnect(ps3OnConnect);
   ps3Mac = (char*)mac;

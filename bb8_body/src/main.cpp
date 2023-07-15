@@ -163,12 +163,12 @@ void registerRegisters() {
   regsAddRegister(REGLIST_MY(RegList_ctrlForw_feedback),   &mpuYpr[1],  true);
   regsAddRegister(REGLIST_MY(RegList_ctrlTilt_feedback),   &mpuYpr[2],  true);
   regsAddRegister(REGLIST_MY(RegList_ctrlRota_feedback),   &mpuYpr[0],  true);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_setp),   &ps3Ypr_body[1],  REGLIST_HAVE_REMOTE);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_setp),   &ps3Ypr_body[2],  REGLIST_HAVE_REMOTE);
-  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_setp),   &ps3Ypr_body[0],  REGLIST_HAVE_REMOTE);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_setp),   &ps3Ypr_neck[1],  REGLIST_HAVE_REMOTE);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_setp),   &ps3Ypr_neck[2],  REGLIST_HAVE_REMOTE);
-  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_setp),   &ps3Ypr_neck[0],  REGLIST_HAVE_REMOTE);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_setp),   &ps3Ftr_body[0],  REGLIST_HAVE_REMOTE);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_setp),   &ps3Ftr_body[1],  REGLIST_HAVE_REMOTE);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_setp),   &ps3Ftr_body[2],  REGLIST_HAVE_REMOTE);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_setp),   &ps3Ftr_neck[0],  REGLIST_HAVE_REMOTE);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_setp),   &ps3Ftr_neck[1],  REGLIST_HAVE_REMOTE);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_setp),   &ps3Ftr_neck[2],  REGLIST_HAVE_REMOTE);
   if(REGLIST_HAVE_REMOTE) {
     regsAddRegister(REGLIST_MY(RegList_batteryVoltage), &ps3Battery, true);
   }

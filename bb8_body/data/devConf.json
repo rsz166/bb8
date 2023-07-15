@@ -6,17 +6,17 @@
     "mode":2,
     "motorHws":[
         {
-            "pinStep":0,
-            "pinDir":0,
-            "pinEn":0,
-            "controlMode":0,
-            "negate":false
-        },
-        {
             "pinStep":23,
             "pinDir":22,
             "pinEn":0,
             "controlMode":2,
+            "negate":false
+        },
+        {
+            "pinStep":0,
+            "pinDir":0,
+            "pinEn":0,
+            "controlMode":0,
             "negate":false
         },
         {
