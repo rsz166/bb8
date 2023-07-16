@@ -90,10 +90,22 @@ bool confRead() {
   if(confReadFile(confFileDevConf, doc)) {
     confDevConf.mode = doc["mode"];
     confDevConf.nodeId = doc["nodeId"];
+    confDevConf.apSsid = doc["ap_ssid"].as<String>();
+    confDevConf.apPass = doc["ap_pass"].as<String>();
     confDevConf.wifiSsid = doc["wifi_ssid"].as<String>();
     confDevConf.wifiPass = doc["wifi_pass"].as<String>();
     confDevConf.btMac = doc["bt_mac"].as<String>();
 
+    for(int i=0; i<4; i++) {
+      confDevConf.wifiIp[i] = doc["wifi_ip"][i];
+    }
+    for(int i=0; i<4; i++) {
+      confDevConf.wifiGateway[i] = doc["wifi_gateway"][i];
+    }
+    for(int i=0; i<4; i++) {
+      confDevConf.wifiMask[i] = doc["wifi_mask"][i];
+    }
+    
     JsonArrayConst objArray = doc["motorHws"].as<JsonArrayConst>();
     int count = 0;
     for(JsonObjectConst obj : objArray) {
@@ -135,9 +147,22 @@ bool confWrite() {
 
   doc["mode"] = confDevConf.mode;
   doc["nodeId"] = confDevConf.nodeId;
+  doc["ap_ssid"] = confDevConf.apSsid;
+  doc["ap_pass"] = confDevConf.apPass;
   doc["wifi_ssid"] = confDevConf.wifiSsid;
   doc["wifi_pass"] = confDevConf.wifiPass;
   doc["bt_mac"] = confDevConf.btMac;
+  
+  for(int i=0; i<4; i++) {
+    doc["wifi_ip"][i] = confDevConf.wifiIp[i];
+  }
+  for(int i=0; i<4; i++) {
+    doc["wifi_gateway"][i] = confDevConf.wifiGateway[i];
+  }
+  for(int i=0; i<4; i++) {
+    doc["wifi_mask"][i] = confDevConf.wifiMask[i];
+  }
+
   for(int i=0; i<CONF_SYS_PID_COUNT; i++) {
     doc["motorHws"][i]["pinStep"] = confDevConf.motorHws.motHwArray[i].pinStep;
     doc["motorHws"][i]["pinDir"] = confDevConf.motorHws.motHwArray[i].pinDir;

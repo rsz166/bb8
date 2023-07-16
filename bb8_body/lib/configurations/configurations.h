@@ -63,8 +63,13 @@ typedef struct {
 
 // device level parameters, unique per device
 typedef struct {
+  String apSsid;
+  String apPass;
   String wifiSsid;
   String wifiPass;
+  byte wifiIp[4];
+  byte wifiGateway[4];
+  byte wifiMask[4];
   String btMac;
   int nodeId;
   int mode;

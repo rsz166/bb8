@@ -216,9 +216,9 @@ void setup() {
 
   if(confDevConf.mode != CONF_MODE_BT) {
     Serial.println("OTA Start...");
-    if(otaNetworkInitSTA(confDevConf.wifiSsid.c_str(), confDevConf.wifiPass.c_str())) {
+    if(otaNetworkInitSTA(confDevConf.wifiSsid.c_str(), confDevConf.wifiPass.c_str(), confDevConf.wifiIp, confDevConf.wifiGateway, confDevConf.wifiMask)) {
       otaInit();
-    } else if(otaNetworkInitAP("ESP")) {
+    } else if(otaNetworkInitAP(confDevConf.apSsid.c_str(), confDevConf.apPass.c_str())) {
       Serial.println("OTA in AP mode");
       otaInit();
     } else {

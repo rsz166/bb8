@@ -20,10 +20,16 @@ void otaApConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
   Serial.println("Device connected to AP");
 }
 
-bool otaNetworkInitAP(const char* ssid) {
+bool otaNetworkInitAP(const char* ssid, const char* pass) {
   apMode = true;
   WiFi.disconnect();
-  bool ret = WiFi.softAP(ssid);
+  if(strlen(ssid) == 0) {
+    Serial.printf("Invalid AP SSID: %s, using default: ESP\n", ssid);
+    ssid = "ESP";
+    pass = "";
+    return false;
+  }
+  bool ret = WiFi.softAP(ssid, pass);
   IPAddress ip(192, 168, 5, 1);
   IPAddress gateway(192, 168, 5, 1);
   IPAddress subnet(255, 255, 255, 0);
@@ -34,13 +40,19 @@ bool otaNetworkInitAP(const char* ssid) {
   return ret;
 }
 
-bool otaNetworkInitSTA(const char* ssid, const char* pass) {
+bool otaNetworkInitSTA(const char* ssid, const char* pass, byte *ip, byte *gateway, byte *mask) {
   if(strlen(ssid) == 0) {
     Serial.printf("Invalid STA SSID: %s\n", ssid);
     return false;
   }
   WiFi.mode(WIFI_STA);
   WiFi.setHostname("bb8");
+  if((ip[0] != 0) || (ip[1] != 0) || (ip[2] != 0) || (ip[3] != 0)) {
+    IPAddress ipAddr(ip[0], ip[1], ip[2], ip[3]);
+    IPAddress gatewayAddr(gateway[0], gateway[1], gateway[2], gateway[3]);
+    IPAddress subnetAddr(mask[0], mask[1], mask[2], mask[3]);
+    WiFi.config(ipAddr, gatewayAddr, subnetAddr);
+  }
   WiFi.begin(ssid, pass);
   return WiFi.waitForConnectResult() == WL_CONNECTED;
 }
@@ -59,6 +71,7 @@ String otaCreatePidTable() {
 }
 
 String otaArgProcessor(const String& var){
+  if(var == "conf_apSsid") return String(confDevConf.apSsid);
   if(var == "conf_wifiSsid") return String(confDevConf.wifiSsid);
   if(var == "conf_btMac") return String(confDevConf.btMac);
   if(var == "conf_nodeId") return String(confDevConf.nodeId);
@@ -219,7 +232,9 @@ void otaSaveParameter(const String& name, const String& value) {
 
 bool otaSetParam(const String &name, const String &value) {
   if(name.startsWith("config_")) {
-    if(name == "config_wifiSsid") { confDevConf.wifiSsid = value; }
+    if(name == "config_apSsid") { confDevConf.apSsid = value; }
+    else if(name == "config_apPass") { confDevConf.apPass = value; }
+    else if(name == "config_wifiSsid") { confDevConf.wifiSsid = value; }
     else if(name == "config_wifiPass") { confDevConf.wifiPass = value; }
     else if(name == "config_btMac") { confDevConf.btMac = value; }
     else if(name == "config_mode") { confDevConf.mode = value.toInt(); }
@@ -276,6 +291,9 @@ void otaRegisterPages() {
 
   server.on("/pid", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/html", otaCreatePidTable());
+  });
+  server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
+    ESP.restart();
   });
   server.on("/pid", HTTP_POST, [](AsyncWebServerRequest *request) {
     int params = request->params();

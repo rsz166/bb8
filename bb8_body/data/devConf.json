@@ -1,6 +1,11 @@
 {
+    "ap_ssid":"bb8",
+    "ap_pass":"SuperSecret123",
     "wifi_ssid":"",
     "wifi_pass":"",
+    "wifi_ip":[0,0,0,0],
+    "wifi_gateway":[0,0,0,0],
+    "wifi_mask":[0,0,0,0],
     "bt_mac":"01:02:03:04:05:06",
     "nodeId":2,
     "mode":2,
