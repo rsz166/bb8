@@ -3,7 +3,7 @@
 #include <ArduinoJson.h>
 #include <log.h>
 
-#define CONF_MAX_SIZE (1024)
+#define CONF_MAX_SIZE (2048)
 
 const String confFileSysTuning = "/sysTuning.json";
 const String confFileDevConf = "/devConf.json";
@@ -163,7 +163,7 @@ bool confWrite() {
     doc["wifi_mask"][i] = confDevConf.wifiMask[i];
   }
 
-  for(int i=0; i<CONF_SYS_PID_COUNT; i++) {
+  for(int i=0; i<CONF_DEV_MOT_COUNT; i++) {
     doc["motorHws"][i]["pinStep"] = confDevConf.motorHws.motHwArray[i].pinStep;
     doc["motorHws"][i]["pinDir"] = confDevConf.motorHws.motHwArray[i].pinDir;
     doc["motorHws"][i]["pinEn"] = confDevConf.motorHws.motHwArray[i].pinEn;
