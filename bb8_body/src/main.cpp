@@ -13,9 +13,8 @@
 // ########### Definitions ############
 
 // HW map
-#define PIN_I2C_SDA 14
-#define PIN_I2C_SCL 15
-#define PIN_MPU_IT -1
+#define PIN_I2C_SDA 21
+#define PIN_I2C_SCL 22
 
 // SCH definitions
 #define SCH_CONTROL_PERIOD_US (1000)
@@ -43,6 +42,7 @@ bool schIsInitBt = false;
 // ########### Functions ############
 
 void taskControl() {
+  mpuHandle();
   conHandle();
 }
 
@@ -160,9 +160,9 @@ void registerRegisters() {
   regsAddRegister(REGLIST_MY(RegList_ctrlForw_act),   &stepControls[0].setpoint,  true);
   regsAddRegister(REGLIST_MY(RegList_ctrlTilt_act),   &stepControls[1].setpoint,  true);
   regsAddRegister(REGLIST_MY(RegList_ctrlRota_act),   &stepControls[2].setpoint,  true);
-  regsAddRegister(REGLIST_MY(RegList_ctrlForw_feedback),   &mpuYpr[0],  true);
-  regsAddRegister(REGLIST_MY(RegList_ctrlTilt_feedback),   &mpuYpr[1],  true);
-  regsAddRegister(REGLIST_MY(RegList_ctrlRota_feedback),   &mpuYpr[2],  true);
+  // regsAddRegister(REGLIST_MY(RegList_ctrlForw_feedback),   &mpuYpr[0],  true); // TODO
+  // regsAddRegister(REGLIST_MY(RegList_ctrlTilt_feedback),   &mpuYpr[1],  true);
+  // regsAddRegister(REGLIST_MY(RegList_ctrlRota_feedback),   &mpuYpr[2],  true);
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_setp),   &ps3Ftr_body[0],  REGLIST_HAVE_REMOTE);
   regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_setp),   &ps3Ftr_body[1],  REGLIST_HAVE_REMOTE);
   regsAddRegister(REGLIST_BODY(RegList_ctrlRota_setp),   &ps3Ftr_body[2],  REGLIST_HAVE_REMOTE);
@@ -197,7 +197,7 @@ void checkTimeouts() {
 
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);
-  mpuHwInit(PIN_I2C_SDA, PIN_I2C_SCL, PIN_MPU_IT);
+  mpuHwInit(PIN_I2C_SDA, PIN_I2C_SCL);
   regsInit();
 
   Serial.begin(115200);
@@ -208,10 +208,9 @@ void setup() {
   confInit();
 
   Serial.println("MPU Start...");
-  if(mpuInit())
+  if(!mpuInit())
   {
-    mpuLoadCalibration();
-    mpuStart();
+    Serial.println("MPU init failed");
   }
 
   if(confDevConf.mode != CONF_MODE_BT) {
@@ -226,7 +225,7 @@ void setup() {
     }
   } else {
     Serial.println("PS3 Start...");
-    ps3Initialize(confDevConf.btMac.c_str());
+    ps3Initialize(confDevConf.btMac.c_str(), &confDevConf.btMin, &confDevConf.btMax);
     schIsInitBt = true;
   }
   
@@ -261,9 +260,6 @@ void loop() {
   // run scheduler
   schRun();
   // perform async actions
-  if(mpuTryRead()) {
-    // new data available
-  }
   intcHandle();
   stepHandle();
   if(schIsInitBt) {

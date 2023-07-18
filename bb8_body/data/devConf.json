@@ -1,5 +1,5 @@
 {
-    "ap_ssid":"bb8",
+    "ap_ssid":"bb8_neck",
     "ap_pass":"SuperSecret123",
     "wifi_ssid":"",
     "wifi_pass":"",
@@ -9,12 +9,14 @@
     "bt_mac":"01:02:03:04:05:06",
     "nodeId":2,
     "mode":2,
+    "bt_min":0,
+    "bt_max":128,
     "motorHws":[
         {
-            "pinStep":23,
-            "pinDir":22,
+            "pinStep":0,
+            "pinDir":0,
             "pinEn":0,
-            "controlMode":2,
+            "controlMode":0,
             "negate":false
         },
         {

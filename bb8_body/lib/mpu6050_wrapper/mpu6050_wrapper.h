@@ -3,13 +3,8 @@
 
 #include <Arduino.h>
 
-void mpuDmpDataReady();
-void mpuHwInit(int sda, int scl, int interrupt);
+void mpuHwInit(int sda, int scl);
 bool mpuInit();
-void mpuLoadCalibration();
-void mpuStart();
-bool mpuTryRead();
-
-extern float mpuYpr[3];
+void mpuHandle();
 
 #endif

@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-void ps3Initialize(const char* mac);
+void ps3Initialize(const char* mac, int* min, int* max);
 void ps3Handle();
 extern float ps3Ftr_body[3], ps3Ftr_neck[3], ps3Battery;
 extern uint32_t ps3MotorEnable;

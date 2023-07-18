@@ -81,6 +81,8 @@ typedef struct {
       ConfMotHw_t rotate;
     } motHwNamed;
   } motorHws;
+  int btMin;
+  int btMax;
 } ConfDeviceConfig_t;
 
 extern ConfSysTuning_t confSysTuning;

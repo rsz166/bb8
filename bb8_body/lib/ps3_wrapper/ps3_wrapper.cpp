@@ -3,11 +3,10 @@
 #include <log.h>
 #include <Ps3Controller.h>
 
-#define PS3_MAX_YPR  (100)
-#define PS3_MAX_JOY  (100) // joy values are -128..+127, but not all joy can reach these values, therefore it's limited to smaller range
-#define PS3_MIN_JOY  (20)
+#define PS3_MAX_OUTPUT  (100)
 #define PS3_TIMEOUT_US  (200000)
 #define PS3_TIMEOUT_RESET_US  (2000000)
+#define PS3_ENABLE_US  (2000000)
 
 #define PS3_BODY_F (-Ps3.data.analog.stick.ly)
 #define PS3_BODY_T (Ps3.data.analog.stick.lx)
@@ -37,16 +36,22 @@ float ps3NeckZeroOffset[3] = {0,0,0};
 volatile unsigned long ps3UpdateMicros = 0;
 bool ps3Timeout = true, ps3Connected;
 char* ps3Mac;
+int *ps3Min, *ps3Max;
+unsigned long ps3HoldTimerMicros = 0;
+bool ps3EnablePending = false;
 
 float ps3Sign(float val) {
   return val >= 0 ? 1 : -1;
 }
 
 float ps3Scale(float val) {
-  if(val <= PS3_MIN_JOY && val >= -PS3_MIN_JOY) return 0;
-  if(val > PS3_MAX_JOY) return PS3_MAX_YPR;
-  if(val < -PS3_MAX_JOY) return -PS3_MAX_YPR;
-  return (val - (ps3Sign(val) * PS3_MIN_JOY)) / (PS3_MAX_JOY - PS3_MIN_JOY) * PS3_MAX_YPR;
+  // joy values are -128..+127, but not all joy can reach these values, therefore it's limited to smaller range
+  int min = *ps3Min;
+  int max = *ps3Max;
+  if(val <= min && val >= -min) return 0;
+  if(val > max) return PS3_MAX_OUTPUT;
+  if(val < -max) return -PS3_MAX_OUTPUT;
+  return (val - (ps3Sign(val) * min)) / (max - min) * PS3_MAX_OUTPUT;
 }
 
 void ps3SaveOffset() {
@@ -101,20 +106,38 @@ void ps3UpdateTimeout() {
 void ps3SetEnable(bool enable) {
   if(enable) {
     ps3SaveOffset();
+    Ps3.setPlayer(10);
   } else {
     // clear output
     for(int i=0; i<3; i++) ps3Ftr_body[i] = 0;
     for(int i=0; i<3; i++) ps3Ftr_neck[i] = 0;
+    Ps3.setPlayer(5);
   }
   ps3MotorEnable = enable;
 }
 
-void ps3Notify() {
-  // hold R1 or L1 to enable movement
-  bool enable = (Ps3.data.button.l1 || Ps3.data.button.r1);
-  if(enable != ps3MotorEnable) {
-    ps3SetEnable(enable);
+void ps3HandleEnable() {
+  if(ps3MotorEnable) {
+    if(Ps3.data.button.circle) {
+      ps3SetEnable(false);
+    }
+  } else {
+    if(Ps3.data.button.r1 && Ps3.data.button.triangle) {
+      if(ps3EnablePending) {
+        if((micros() - ps3HoldTimerMicros) >= PS3_ENABLE_US) {
+          ps3SetEnable(true);
+          ps3EnablePending = false;
+        }
+      } else {
+        ps3EnablePending = true;
+        ps3HoldTimerMicros = micros();
+      }
+    }
   }
+}
+
+void ps3Notify() {
+  ps3HandleEnable();
   if(ps3MotorEnable) {
     ps3UpdateMotors();
   }
@@ -124,14 +147,6 @@ void ps3Notify() {
     ps3Battery = (Ps3.data.status.battery - 1) * 25;
   }
   ps3UpdateTimeout();
-  if(Ps3.event.button_down.circle) {
-    Ps3.setPlayer(2);
-    Ps3.setRumble(50,500);
-  }
-  if(Ps3.event.button_down.square) {
-    Ps3.setPlayer(3);
-    Ps3.setRumble(100,200);
-  }
   // LOG_F("t%u\tl %i %i\tr%i %i\tb%i %i\ta%i %i %i\tg%i\n",
   //   millis(),
   //   Ps3.data.analog.stick.lx,
@@ -163,11 +178,13 @@ void ps3OnTimeout() {
   LOG_S("PS3 disconnected, reset in 2 sec");
 }
 
-void ps3Initialize(const char* mac) {
+void ps3Initialize(const char* mac, int* min, int* max) {
   for(int i=0; i<3; i++) ps3Ftr_body[i] = 0;
   Ps3.attach(ps3Notify);
   Ps3.attachOnConnect(ps3OnConnect);
   ps3Mac = (char*)mac;
+  ps3Min = min;
+  ps3Max = max;
   Ps3.begin(ps3Mac);
 }
 
