@@ -42,7 +42,7 @@ bool mpuInit() {
   return true;
 }
 
-#define MPU_AXIS_UP     (mpuAccel[0])
+#define MPU_AXIS_UP     (mpuAccel[0]) // TODO: map correct axes based on mounting position
 #define MPU_AXIS_RIGHT  (mpuAccel[1])
 #define MPU_AXIS_FORW   (mpuAccel[2])
 

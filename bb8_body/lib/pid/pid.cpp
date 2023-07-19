@@ -12,8 +12,8 @@ void pidStep(pidCon_t *pid) {
 }
 
 float pidStepExternal(pidCon_t *pid, float sp, float fb) {
-    float e = *pid->ref - (pid->params->isOpenLoop ? 0 : fb);
-    *pid->actuation = pidSimpleStep(e,pid->params->sat,pid->params->p,pid->params->i,pid->params->d,&pid->iStorage,&pid->dStorage);
+    float e = sp - (pid->params->isOpenLoop ? 0 : fb);
+    return pidSimpleStep(e,pid->params->sat,pid->params->p,pid->params->i,pid->params->d,&pid->iStorage,&pid->dStorage);
 }
 
 float pidLimit(float x, float limit) {
