@@ -14,5 +14,8 @@ typedef struct {
 
 void pidInit(pidCon_t *pid);
 void pidStep(pidCon_t *pid);
+float pidStepExternal(pidCon_t *pid, float sp, float fb);
+void pidSimpleInit(float *accI, float *accD);
+float pidSimpleStep(float e, float sat, float kp, float ki, float kd, float *accI, float *accD);
 
 #endif

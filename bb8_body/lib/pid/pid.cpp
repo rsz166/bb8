@@ -2,18 +2,35 @@
 #include <log.h>
 
 void pidInit(pidCon_t *pid) {
-    pid->iStorage = 0;
-    pid->dStorage = 0;
+    pidSimpleInit(&pid->iStorage, &pid->dStorage);
 }
 
 void pidStep(pidCon_t *pid) {
     float fb = pid->params->isOpenLoop ? 0 : *pid->feedback;
     float e = *pid->ref - fb;
-    pid->iStorage += e * pid->params->i;
-    float u = e * pid->params->p + pid->iStorage + (e - pid->dStorage) * pid->params->d;
-    pid->dStorage = e;
-    float sat = pid->params->sat;
-    if(u > sat) u = sat;
-    else if(u < -sat) u = -sat;
-    *pid->actuation = u;
+    *pid->actuation = pidSimpleStep(e,pid->params->sat,pid->params->p,pid->params->i,pid->params->d,&pid->iStorage,&pid->dStorage);
+}
+
+float pidStepExternal(pidCon_t *pid, float sp, float fb) {
+    float e = *pid->ref - (pid->params->isOpenLoop ? 0 : fb);
+    *pid->actuation = pidSimpleStep(e,pid->params->sat,pid->params->p,pid->params->i,pid->params->d,&pid->iStorage,&pid->dStorage);
+}
+
+float pidLimit(float x, float limit) {
+    if(x > limit) return limit;
+    if(x < -limit) return -limit;
+    return x;
+}
+
+void pidSimpleInit(float *accI, float *accD) {
+    *accI = 0;
+    *accD = 0;
+}
+
+float pidSimpleStep(float e, float sat, float kp, float ki, float kd, float *accI, float *accD) {
+    float i = pidLimit(*accI + e * ki, sat);
+    *accI = i;
+    float u = kp * e + i + (e - *accD) * kd;
+    *accD = e;
+    return pidLimit(u, sat);
 }
