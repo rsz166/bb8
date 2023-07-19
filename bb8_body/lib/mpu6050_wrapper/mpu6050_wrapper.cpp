@@ -16,8 +16,7 @@ MPU6050 mpu;
 //MPU6050 mpu(0x69); // <-- use for AD0 high
 
 float mpuAccel[3],mpuGyro[3];           // [x,y,z]
-float mpuGravity[3];
-float mpuTilt[3];
+float mpuTilt[2];                       // [forward-backward-vertical plane from vertical (+ is tilt forward), right-left-vertical plane from vertical (+ is tilt right)]
 
 void mpuHwInit(int sda, int scl) {
     // join I2C bus (I2Cdev library doesn't do this automatically)
@@ -43,8 +42,20 @@ bool mpuInit() {
   return true;
 }
 
+#define MPU_AXIS_UP     (mpuAccel[0])
+#define MPU_AXIS_RIGHT  (mpuAccel[1])
+#define MPU_AXIS_FORW   (mpuAccel[2])
+
 void mpuHandle() {
-  int16_t ax,ay,az,gx,gy,gz;
+  int16_t ax,ay,az;
+  // int16_t gx,gy,gz;
   // mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
+  mpu.getAcceleration(&ax,&ay,&az);
+  // LOG_F("mpu:\t%i\t%i\t%i\n",ax,ay,az);
   // LOG_F("mpu:\t%i\t%i\t%i\t%i\t%i\t%i\n",ax,ay,az,gx,gy,gz);
+  mpuAccel[0] = ax;
+  mpuAccel[1] = ay;
+  mpuAccel[2] = az;
+  mpuTilt[0] = atan2(MPU_AXIS_FORW,-MPU_AXIS_UP); // TODO: use tilt offset calibration
+  mpuTilt[1] = atan2(MPU_AXIS_RIGHT,-MPU_AXIS_UP);
 }
