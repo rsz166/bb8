@@ -83,7 +83,7 @@ void taskUptime() {
 }
 
 void taskBlink() {
-  int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
+  int mode = *regsRegisters[REGLIST_MY(RegList_mode)].data.pi;
   digitalWrite(BUILTIN_LED, (schmBlinkCounter++ & mode) ? HIGH : LOW);
 }
 
