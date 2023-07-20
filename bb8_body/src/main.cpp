@@ -185,6 +185,10 @@ void registerRegisters() {
   regsAddRegister(REGLIST_NECK(RegList_ctrlForw_accelLimit), &confSysTuning.motors.motNamed.neckForward.accel, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_accelLimit), &confSysTuning.motors.motNamed.neckTilt.accel, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_accelLimit), &confSysTuning.motors.motNamed.neckRotate.accel, REGLIST_HAVE_OTA);
+  
+  regsAddRegister(REGLIST_MY(RegList_mpuAx),   &mpuAccel[0],  true);
+  regsAddRegister(REGLIST_MY(RegList_mpuAy),   &mpuAccel[1],  true);
+  regsAddRegister(REGLIST_MY(RegList_mpuAz),   &mpuAccel[2],  true);
 }
 
 void checkTimeouts() {
