@@ -239,6 +239,8 @@ bool otaSetParam(const String &name, const String &value) {
     else if(name == "config_btMac") { confDevConf.btMac = value; }
     else if(name == "config_mode") { confDevConf.mode = value.toInt(); }
     else if(name == "config_nodeId") { confDevConf.nodeId = value.toInt(); }
+    else if(name == "config_btMin") { confDevConf.btMin = value.toInt(); }
+    else if(name == "config_btMax") { confDevConf.btMax = value.toInt(); }
     else if(name.startsWith("config_motorHws_")) {
       // config_motorHws_0_pinStep
       int idx = name[16]-'0';

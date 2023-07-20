@@ -19,6 +19,8 @@ void otaeSendConfig() {
     doc["btMac"] = confDevConf.btMac;
     doc["nodeId"] = confDevConf.nodeId;
     doc["mode"] = confDevConf.mode;
+    doc["btMin"] = confDevConf.btMin;
+    doc["btMax"] = confDevConf.btMax;
     for(int i=0;i<CONF_DEV_MOT_COUNT;i++) {
         doc["motorHws"][i]["pinStep"] = confDevConf.motorHws.motHwArray[i].pinStep;
         doc["motorHws"][i]["pinDir"] = confDevConf.motorHws.motHwArray[i].pinDir;

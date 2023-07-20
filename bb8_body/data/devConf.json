@@ -9,14 +9,14 @@
     "bt_mac":"01:02:03:04:05:06",
     "nodeId":2,
     "mode":2,
-    "bt_min":0,
+    "bt_min":6,
     "bt_max":128,
     "motorHws":[
         {
-            "pinStep":0,
-            "pinDir":0,
+            "pinStep":32,
+            "pinDir":33,
             "pinEn":0,
-            "controlMode":0,
+            "controlMode":2,
             "negate":false
         },
         {
