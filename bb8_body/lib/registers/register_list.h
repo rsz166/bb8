@@ -51,6 +51,9 @@
     func(ctrlForw_sat,REGLIST_TYPE_FLOAT) \
     func(ctrlTilt_sat,REGLIST_TYPE_FLOAT) \
     func(ctrlRota_sat,REGLIST_TYPE_FLOAT) \
+    func(ctrlForw_fbgain,REGLIST_TYPE_FLOAT) \
+    func(ctrlTilt_fbgain,REGLIST_TYPE_FLOAT) \
+    func(ctrlRota_fbgain,REGLIST_TYPE_FLOAT) \
     func(ctrlForw_isOpenLoop,REGLIST_TYPE_INT) \
     func(ctrlTilt_isOpenLoop,REGLIST_TYPE_INT) \
     func(ctrlRota_isOpenLoop,REGLIST_TYPE_INT) \

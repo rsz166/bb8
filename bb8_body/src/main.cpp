@@ -38,6 +38,7 @@ uint8_t schmBlinkCounter = 0;
 uint32_t schUptimeMillisec = 0;
 uint32_t schButtonDownTime = 0;
 bool schIsInitBt = false;
+uint32_t schmStatusFlg = 0;
 
 // ########### Functions ############
 
@@ -124,37 +125,44 @@ void registerRegisters() {
     regsAddRegister(REGLIST_MY(RegList_enableMotors), &ps3MotorEnable, true);
     regsAddRegister(REGLIST_OTHER(RegList_enableMotors), &ps3MotorEnable, true);
   }
+  regsAddRegister(REGLIST_MY(RegList_status), &schmStatusFlg,  true);
   
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_p),   &confSysTuning.pids.pidNamed.bodyForward.p,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_i),   &confSysTuning.pids.pidNamed.bodyForward.i,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_d),   &confSysTuning.pids.pidNamed.bodyForward.d,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_sat), &confSysTuning.pids.pidNamed.bodyForward.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlForw_fbgain), &confSysTuning.pids.pidNamed.bodyForward.fbgain, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlForw_isOpenLoop), &confSysTuning.pids.pidNamed.bodyForward.isOpenLoop, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_p),   &confSysTuning.pids.pidNamed.bodyTilt.p,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_i),   &confSysTuning.pids.pidNamed.bodyTilt.i,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_d),   &confSysTuning.pids.pidNamed.bodyTilt.d,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_sat), &confSysTuning.pids.pidNamed.bodyTilt.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_fbgain), &confSysTuning.pids.pidNamed.bodyTilt.fbgain, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlTilt_isOpenLoop), &confSysTuning.pids.pidNamed.bodyTilt.isOpenLoop, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlRota_p),   &confSysTuning.pids.pidNamed.bodyRotate.p,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlRota_i),   &confSysTuning.pids.pidNamed.bodyRotate.i,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlRota_d),   &confSysTuning.pids.pidNamed.bodyRotate.d,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlRota_sat), &confSysTuning.pids.pidNamed.bodyRotate.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_BODY(RegList_ctrlRota_fbgain), &confSysTuning.pids.pidNamed.bodyRotate.fbgain, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_BODY(RegList_ctrlRota_isOpenLoop), &confSysTuning.pids.pidNamed.bodyRotate.isOpenLoop, REGLIST_HAVE_OTA);
 
   regsAddRegister(REGLIST_NECK(RegList_ctrlForw_p),   &confSysTuning.pids.pidNamed.neckForward.p,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlForw_i),   &confSysTuning.pids.pidNamed.neckForward.i,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlForw_d),   &confSysTuning.pids.pidNamed.neckForward.d,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlForw_sat), &confSysTuning.pids.pidNamed.neckForward.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlForw_fbgain), &confSysTuning.pids.pidNamed.neckForward.fbgain, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlForw_isOpenLoop), &confSysTuning.pids.pidNamed.neckForward.isOpenLoop, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_p),   &confSysTuning.pids.pidNamed.neckTilt.p,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_i),   &confSysTuning.pids.pidNamed.neckTilt.i,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_d),   &confSysTuning.pids.pidNamed.neckTilt.d,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_sat), &confSysTuning.pids.pidNamed.neckTilt.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_fbgain), &confSysTuning.pids.pidNamed.neckTilt.fbgain, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlTilt_isOpenLoop), &confSysTuning.pids.pidNamed.neckTilt.isOpenLoop, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_p),   &confSysTuning.pids.pidNamed.neckRotate.p,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_i),   &confSysTuning.pids.pidNamed.neckRotate.i,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_d),   &confSysTuning.pids.pidNamed.neckRotate.d,   REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_sat), &confSysTuning.pids.pidNamed.neckRotate.sat, REGLIST_HAVE_OTA);
+  regsAddRegister(REGLIST_NECK(RegList_ctrlRota_fbgain), &confSysTuning.pids.pidNamed.neckRotate.fbgain, REGLIST_HAVE_OTA);
   regsAddRegister(REGLIST_NECK(RegList_ctrlRota_isOpenLoop), &confSysTuning.pids.pidNamed.neckRotate.isOpenLoop, REGLIST_HAVE_OTA);
 
   regsAddRegister(REGLIST_MY(RegList_ctrlForw_act),   &stepControls[0].setpoint,  true);
@@ -192,7 +200,8 @@ void registerRegisters() {
 }
 
 void checkTimeouts() {
-  bool enable = !intcTimeoutFlg && *regsRegisters[REGLIST_MY(RegList_enableMotors)].data.pi;
+  schmStatusFlg = !intcTimeoutFlg && !mpuTimeoutFlg;
+  bool enable = schmStatusFlg && *regsRegisters[REGLIST_OTHER(RegList_status)].data.pi && *regsRegisters[REGLIST_MY(RegList_enableMotors)].data.pi;
   conIsEnabled = enable;
   stepEnable = enable;
 }

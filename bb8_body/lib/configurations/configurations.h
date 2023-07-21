@@ -15,7 +15,7 @@
 #define CONF_NODEID_NECK 2
 
 typedef struct {
-  float p, i, d, sat;
+  float p, i, d, sat, fbgain;
   int isOpenLoop;
 } ConfPIDParam_t;
 

@@ -5,6 +5,7 @@
 
 extern float mpuAccel[3];   // [x,y,z]
 extern float mpuTilt[2];    // [forward-backward-vertical plane from vertical (+ is tilt forward), right-left-vertical plane from vertical (+ is tilt right)]
+extern bool mpuTimeoutFlg;
 
 void mpuHwInit(int sda, int scl);
 bool mpuInit();

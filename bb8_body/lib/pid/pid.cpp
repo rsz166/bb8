@@ -6,13 +6,13 @@ void pidInit(pidCon_t *pid) {
 }
 
 void pidStep(pidCon_t *pid) {
-    float fb = pid->params->isOpenLoop ? 0 : *pid->feedback;
+    float fb = pid->params->isOpenLoop ? 0 : (*pid->feedback * pid->params->fbgain);
     float e = *pid->ref - fb;
     *pid->actuation = pidSimpleStep(e,pid->params->sat,pid->params->p,pid->params->i,pid->params->d,&pid->iStorage,&pid->dStorage);
 }
 
 float pidStepExternal(pidCon_t *pid, float sp, float fb) {
-    float e = sp - (pid->params->isOpenLoop ? 0 : fb);
+    float e = sp - (pid->params->isOpenLoop ? 0 : (fb * pid->params->fbgain));
     return pidSimpleStep(e,pid->params->sat,pid->params->p,pid->params->i,pid->params->d,&pid->iStorage,&pid->dStorage);
 }
 
