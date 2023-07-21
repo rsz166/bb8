@@ -265,6 +265,7 @@ bool otaSetParam(const String &name, const String &value) {
       else if(name.endsWith("_d")) confSysTuning.pids.pidArray[idx].d = value.toFloat();
       else if(name.endsWith("_sat")) confSysTuning.pids.pidArray[idx].sat = value.toFloat();
       else if(name.endsWith("_fbgain")) confSysTuning.pids.pidArray[idx].fbgain = value.toFloat();
+      else if(name.endsWith("_isOpenLoop")) confSysTuning.pids.pidArray[idx].isOpenLoop = value.toInt();
       else return false;
     }
     else return false;
