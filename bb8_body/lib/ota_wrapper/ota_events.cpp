@@ -10,8 +10,8 @@
 #include <ArduinoJson.h>
 
 AsyncEventSource events("/events");
-StaticJsonDocument<2548> doc;
-char buffer[2548]; // TODO: check regs
+StaticJsonDocument<3000> doc;
+char buffer[3000]; // TODO: check regs
 
 void otaeSendConfig() {
     doc.clear();
@@ -53,7 +53,7 @@ void otaeSendTuning() {
 #define OTAE_REGJSON_BODY(name,type) doc["body_"#name] = (type == REGLIST_TYPE_FLOAT) ? (*regsRegisters[REGLIST_BODY(RegList_##name)].data.pf) : (*regsRegisters[REGLIST_BODY(RegList_##name)].data.pi);
 #define OTAE_REGJSON_NECK(name,type) doc["neck_"#name] = (type == REGLIST_TYPE_FLOAT) ? (*regsRegisters[REGLIST_NECK(RegList_##name)].data.pf) : (*regsRegisters[REGLIST_NECK(RegList_##name)].data.pi);
 
-void odaeSendRegs() {
+void otaeSendRegs() {
     doc.clear();
     REGLIST_REGS(OTAE_REGJSON_BODY)
     REGLIST_REGS(OTAE_REGJSON_NECK)
@@ -75,7 +75,7 @@ void otaeInit(AsyncWebServer *server) {
 }
 
 void otaeHandle() {
-    odaeSendRegs();
+    otaeSendRegs();
     otaeSendConfig();
     otaeSendTuning();
 }

@@ -22,8 +22,9 @@ MPU6050 mpu;
 
 float mpuAccel[3],mpuGyro[3];           // [x,y,z]
 float mpuTilt[2];                       // [forward-backward-vertical plane from vertical (+ is tilt forward), right-left-vertical plane from vertical (+ is tilt right)]
-uint32_t mpuLastSuccess;
+volatile uint32_t mpuLastSuccess;
 bool mpuTimeoutFlg;
+bool mpuInitialized = false;
 
 void mpuHwInit(int sda, int scl) {
     // join I2C bus (I2Cdev library doesn't do this automatically)
@@ -36,6 +37,7 @@ void mpuHwInit(int sda, int scl) {
 }
 
 bool mpuInit() {
+  mpuTimeoutFlg = true;
   LOG_S("MPU Init...");
   mpu.initialize();
   
@@ -46,29 +48,42 @@ bool mpuInit() {
   }
   LOG_S("MPU6050 connection successful");
   mpuLastSuccess = micros();
-  mpuTimeoutFlg = false;
-
+  mpuInitialized = true;
   return true;
 }
 
 void mpuHandle() {
+  if(!mpuInitialized) return;
   int16_t ax,ay,az;
   // int16_t gx,gy,gz;
-  if(!mpu.testConnection()) {
+  bool success = false;
+  if(mpu.testConnection()) {
     // mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
     mpu.getAcceleration(&ax,&ay,&az);
     // LOG_F("mpu:\t%i\t%i\t%i\n",ax,ay,az);
     // LOG_F("mpu:\t%i\t%i\t%i\t%i\t%i\t%i\n",ax,ay,az,gx,gy,gz);
-    mpuAccel[0] = ax;
-    mpuAccel[1] = ay;
-    mpuAccel[2] = az;
-    mpuTilt[0] = atan2(MPU_AXIS_FORW,-MPU_AXIS_UP); // TODO: use tilt offset calibration
-    mpuTilt[1] = atan2(MPU_AXIS_RIGHT,-MPU_AXIS_UP);
+    if((ax != mpuAccel[0]) || (ay != mpuAccel[1]) || (az != mpuAccel[2])) {
+      success = true;
+      mpuAccel[0] = ax;
+      mpuAccel[1] = ay;
+      mpuAccel[2] = az;
+      mpuTilt[0] = atan2(MPU_AXIS_FORW,-MPU_AXIS_UP); // TODO: use tilt offset calibration
+      mpuTilt[1] = atan2(MPU_AXIS_RIGHT,-MPU_AXIS_UP);
+    }
+  }
+  if(success) {
     mpuLastSuccess = micros();
-    mpuTimeoutFlg = false;
+    if(mpuTimeoutFlg) {
+      LOG_S("MPU recovery");
+      mpu.initialize();
+      mpuTimeoutFlg = false;
+    }
   } else {
-    if((micros() - mpuLastSuccess) > MPU_TIMEOUT_US) {
-      mpuTimeoutFlg = true;
+    if(!mpuTimeoutFlg) {
+      if((micros() - mpuLastSuccess) > MPU_TIMEOUT_US) {
+        LOG_S("MPU timeout");
+        mpuTimeoutFlg = true;
+      }
     }
   }
 }

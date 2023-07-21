@@ -17,7 +17,7 @@
 #define PIN_I2C_SCL 22
 
 // SCH definitions
-#define SCH_CONTROL_PERIOD_US (1000)
+#define SCH_CONTROL_PERIOD_US (10000)
 #define SCH_BLINK_PERIOD_US (250000)
 #define SCH_MODE_CHANGE_PERIOD_US (500000)
 #define SCH_UPTIME_PERIOD_US (100000)
@@ -200,7 +200,9 @@ void registerRegisters() {
 }
 
 void checkTimeouts() {
-  schmStatusFlg = !intcTimeoutFlg && !mpuTimeoutFlg;
+  int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
+  bool mpuOk = (mode == 4) || !mpuTimeoutFlg;
+  schmStatusFlg = !intcTimeoutFlg && mpuOk;
   bool enable = schmStatusFlg && *regsRegisters[REGLIST_OTHER(RegList_status)].data.pi && *regsRegisters[REGLIST_MY(RegList_enableMotors)].data.pi;
   conIsEnabled = enable;
   stepEnable = enable;
