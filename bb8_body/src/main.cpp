@@ -200,12 +200,12 @@ void registerRegisters() {
 }
 
 void checkTimeouts() {
-  int mode = *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
-  bool mpuOk = (mode == 4) || !mpuTimeoutFlg;
+  bool testMode = 4 == *regsRegisters[REGLIST_MY(RegList_requestedMode)].data.pi;
+  bool mpuOk = testMode || !mpuTimeoutFlg;
   schmStatusFlg = !intcTimeoutFlg && mpuOk;
   bool enable = schmStatusFlg && *regsRegisters[REGLIST_OTHER(RegList_status)].data.pi && *regsRegisters[REGLIST_MY(RegList_enableMotors)].data.pi;
   conIsEnabled = enable;
-  stepEnable = enable;
+  stepEnable = enable || testMode;
 }
 
 // ########### Entry points ############
