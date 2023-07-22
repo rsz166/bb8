@@ -132,6 +132,8 @@ void ps3HandleEnable() {
         ps3EnablePending = true;
         ps3HoldTimerMicros = micros();
       }
+    } else {
+      ps3EnablePending = false;
     }
   }
 }

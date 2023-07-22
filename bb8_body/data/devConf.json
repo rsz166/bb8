@@ -15,21 +15,21 @@
         {
             "pinStep":32,
             "pinDir":33,
-            "pinEn":0,
+            "pinEn":25,
             "controlMode":2,
             "negate":false
         },
         {
-            "pinStep":25,
-            "pinDir":26,
-            "pinEn":0,
+            "pinStep":26,
+            "pinDir":27,
+            "pinEn":14,
             "controlMode":0,
             "negate":false
         },
         {
-            "pinStep":27,
-            "pinDir":14,
-            "pinEn":0,
+            "pinStep":19,
+            "pinDir":18,
+            "pinEn":5,
             "controlMode":0,
             "negate":false
         }
