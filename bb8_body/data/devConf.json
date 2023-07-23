@@ -13,22 +13,22 @@
     "bt_max":128,
     "motorHws":[
         {
-            "pinStep":32,
-            "pinDir":33,
+            "pinStep":33,
+            "pinDir":32,
             "pinEn":25,
             "controlMode":2,
             "negate":false
         },
         {
-            "pinStep":26,
-            "pinDir":27,
+            "pinStep":27,
+            "pinDir":26,
             "pinEn":14,
             "controlMode":0,
             "negate":false
         },
         {
-            "pinStep":19,
-            "pinDir":18,
+            "pinStep":18,
+            "pinDir":19,
             "pinEn":5,
             "controlMode":0,
             "negate":false
