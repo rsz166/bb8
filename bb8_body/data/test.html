@@ -7,4 +7,10 @@
     <div id="regs"></div>
     <a href="/">Home</a>
     <script src="otae.js"></script>
+    <script>
+        if (!!window.EventSource) {
+            const otae = new Otae(true);
+            otae.registerEvents(["regs","config","tuning"]);
+        }
+    </script>
 </html>

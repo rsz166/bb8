@@ -2,66 +2,11 @@
     <h1>Regs</h1>
     <div id="regs"></div>
     <a href="/">Home</a>
+    <script src="otae.js"></script>
     <script>
         if (!!window.EventSource) {
-            var source = new EventSource('/events');
-        
-            source.addEventListener('open', function(e) {
-                console.log("Events Connected");
-            }, false);
-        
-            source.addEventListener('error', function(e) {
-            if (e.target.readyState != EventSource.OPEN) {
-                console.log("Events Disconnected");
-            }
-            }, false);
-        
-            source.addEventListener('regs', (e) => eventReceived("regs", e.data), false);
-        }
-        function eventReceived(cat,str) {
-            var jobj = JSON.parse(str);
-            var disp = document.getElementById(cat);
-            for (var prop in jobj) {
-                updateVariable(cat,prop,jobj[prop]);
-            }
-        }
-        function updateVariable(cat,name,value) {
-            var key = cat+"_"+name;
-            var elem = document.getElementById(key);
-            if(elem == null) {
-                var disp = document.getElementById(cat);
-                var header = document.createElement("label");
-                header.innerHTML = name + ": ";
-                disp.appendChild(header);
-                elem = document.createElement("label");
-                elem.setAttribute("id", key);
-                disp.appendChild(elem);
-                var input = document.createElement("input");
-                input.setAttribute("id", "input_"+key);
-                disp.appendChild(input);
-                var btn = document.createElement("button");
-                btn.addEventListener("click", ()=>setVariable(cat,name));
-                btn.innerHTML = "Set";
-                disp.appendChild(btn);
-                var br = document.createElement("br");
-                disp.appendChild(br);
-            }
-            elem.innerHTML = value;
-        }
-        function setVariable(cat,name) {
-            var input = document.getElementById("input_"+cat+"_"+name);
-            if(input != null) {
-                var value = input.value;
-                fetch("/set?"+cat+"_"+name+"="+value)
-                .then( response => {
-                    if(response.ok) {
-                        input.value = "";
-                        input.style.backgroundColor = "lightgreen";
-                    } else {
-                        input.style.backgroundColor = "lightcoral";
-                    }
-                });
-            }
+            const otae = new Otae(true);
+            otae.registerEvents(["regs"]);
         }
     </script>
 </html>
