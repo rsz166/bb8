@@ -68,12 +68,12 @@ class Otae {
             input.addEventListener("keypress", (event) =>{
                 if (event.key === "Enter") {
                   event.preventDefault();
-                  this.setVariable(cat,name)
+                  this.setVariable(cat,name,input.value,input)
                 }
             });
             disp.appendChild(input);
             var btn = document.createElement("button");
-            btn.addEventListener("click", ()=>this.setVariable(cat,name));
+            btn.addEventListener("click", ()=>this.setVariable(cat,name,input.value,input));
             btn.innerHTML = "Set";
             disp.appendChild(btn);
             var br = document.createElement("br");
@@ -82,19 +82,19 @@ class Otae {
         return elem;
     }
 
-    setVariable(cat,name) {
-        var input = document.getElementById("input_"+cat+"_"+name);
-        if(input != null) {
-            var value = input.value;
-            fetch("/set?"+cat+"_"+name+"="+value)
-            .then( response => {
+    setVariable(cat,name,value,input) {
+        fetch("/set?"+cat+"_"+name+"="+value)
+        .then( response => {
+            if(input != null) {
                 if(response.ok) {
-                    input.value = "";
                     input.style.backgroundColor = "lightgreen";
+                    if (input.tagName.toLowerCase() === 'input') {
+                        input.value = "";
+                    }
                 } else {
                     input.style.backgroundColor = "lightcoral";
                 }
-            });
-        }
+            }
+        });
     }
 }

@@ -1,36 +1,105 @@
 <html>
-    <h1>Configuration parameters</h1>
-    <form method="post">
-        <label>Move</label>
-        <table>
-            <tr>
-            <td><input type="submit" name="move" value="-10000"/></td>
-            <td><input type="submit" name="move" value="-1000"/></td>
-            <td><input type="submit" name="move" value="-100"/></td>
-            <td><input type="submit" name="move" value="-10"/></td>
-            <td><input type="submit" name="move" value="Stop"/></td>
-            <td><input type="submit" name="move" value="10"/></td>
-            <td><input type="submit" name="move" value="100"/></td>
-            <td><input type="submit" name="move" value="1000"/></td>
-            <td><input type="submit" name="move" value="10000"/></td>
-            </tr>
-        </table>
-        <label>Speed: %motorSpeed%</label>
-        <table>
-            <tr>
-            <td><input type="submit" name="speed" value="-10000"/></td>
-            <td><input type="submit" name="speed" value="-1000"/></td>
-            <td><input type="submit" name="speed" value="-100"/></td>
-            <td><input type="submit" name="speed" value="-10"/></td>
-            <td><input type="submit" name="speed" value="-1"/></td>
-            <td><input type="submit" name="speed" value="0"/></td>
-            <td><input type="submit" name="speed" value="1"/></td>
-            <td><input type="submit" name="speed" value="10"/></td>
-            <td><input type="submit" name="speed" value="100"/></td>
-            <td><input type="submit" name="speed" value="1000"/></td>
-            <td><input type="submit" name="speed" value="10000"/></td>
-            </tr>
-        </table>
-    </form>
+    <h1>Motor test</h1>
+    <h2>Body</h2>
+    <div id="body_mode"></div>
+    <div>
+        <div id="body_forw_reg"></div>
+        <div id="body_tilt_reg"></div>
+        <div id="body_rota_reg"></div>
+    </div>
+    <h2>Neck</h2>
+    <div id="neck_mode"></div>
+    <div>
+        <div id="neck_forw_reg"></div>
+        <div id="neck_tilt_reg"></div>
+        <div id="neck_rota_reg"></div>
+    </div>
+    <br/>
     <a href="/">Home</a>
+    <script src="otae.js"></script>
+    <script>
+        if (!!window.EventSource) {
+            const otae = new Otae(false);
+            otae.registerEvents(["regs"]);
+
+            generateForm(otae,"body");
+            generateForm(otae,"neck");
+        }
+
+        function generateForm(otae,nodeName) {
+            var disp = document.getElementById(nodeName+"_mode");
+            otae.createInput(disp,"regs",nodeName+"_requestedMode");
+            var btn;
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable("regs",nodeName+"_requestedMode",4));
+            btn.innerHTML = "Test mode";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable("regs",nodeName+"_requestedMode",0));
+            btn.innerHTML = "Normal mode";
+            disp.appendChild(btn);
+            var br = document.createElement("br");
+            disp.appendChild(br);
+            br = document.createElement("br");
+            disp.appendChild(br);
+
+            createValueButtons(otae, document.getElementById(nodeName+"_forw_reg"), nodeName+"_ctrlForw_act");
+            createValueButtons(otae, document.getElementById(nodeName+"_tilt_reg"), nodeName+"_ctrlTilt_act");
+            createValueButtons(otae, document.getElementById(nodeName+"_rota_reg"), nodeName+"_ctrlRota_act");
+        }
+
+        function createValueButtons(otae, disp, name) {
+            var cat = "regs";
+            otae.createInput(disp,cat,name);
+            var btn;
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,-10000));
+            btn.innerHTML = "-10.000";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,-6000));
+            btn.innerHTML = "-6.000";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,-1000));
+            btn.innerHTML = "-1.000";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,-100));
+            btn.innerHTML = "-100";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,-10));
+            btn.innerHTML = "-10";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,0));
+            btn.innerHTML = "0";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,10));
+            btn.innerHTML = "10";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,100));
+            btn.innerHTML = "100";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,1000));
+            btn.innerHTML = "1.000";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,6000));
+            btn.innerHTML = "6.000";
+            disp.appendChild(btn);
+            btn = document.createElement("button");
+            btn.addEventListener("click", ()=>otae.setVariable(cat,name,10000));
+            btn.innerHTML = "10.000";
+            disp.appendChild(btn);
+            var br = document.createElement("br");
+            disp.appendChild(br);
+            br = document.createElement("br");
+            disp.appendChild(br);
+        }
+    </script>
 </html>
