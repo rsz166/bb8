@@ -28,6 +28,7 @@
 
         function generateForm(otae,nodeName) {
             var disp = document.getElementById(nodeName+"_mode");
+            otae.createInput(disp,"regs",nodeName+"_uptime");
             otae.createInput(disp,"regs",nodeName+"_requestedMode");
             var btn;
             btn = document.createElement("button");
